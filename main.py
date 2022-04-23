@@ -7,13 +7,14 @@ import pandas as pd
 from PIL import Image
 from skimage import color
 from glob import glob
+from OrgansInSlicesData import OrgansInSlicesData
 import warnings
 
 
 
 
-def PrepareData():
-  df = pd.read_csv('../input/uw-madison-gi-tract-image-segmentation/train.csv')
+def PrepareImageDataFromFolder():
+  
   list_images = glob('..\\input\\uw-madison-gi-tract-image-segmentation\\train\\*\\*\\scans\\*.png')
   image_details = pd.DataFrame({'Path':list_images})
   splits = image_details['Path'].str.split("\\", n = 7, expand = True)
@@ -30,11 +31,15 @@ def PrepareData():
   image_details['Slice_no'] = splits[1].astype(int)
   image_details['Height'] = splits[2].astype(int)
   image_details['Width'] = splits[3].astype(int)
-  mask_data = df[df['segmentation'].notnull()]
-  return image_details,mask_data
+  
+  return image_details
 
 
-image_details,mask_data=PrepareData()
+
+
+
+image_details=PrepareImageDataFromFolder()
+mask_data=OrgansInSlicesData.PrepareImageDataFromDatabase()
 index_list = list(mask_data.index)
 
 def ShowSomeImages(numImages,imageList):
@@ -113,10 +118,11 @@ def apply_mask(image, maskImage):
 def CreateImage(path):
     return  np.array(Image.open(path))
 
-def CreateMask(index,details,mask_data,ImageShape):   
+def CreateMask(index,mask_data,ImageShape):   
   p_loc = get_pixel_loc(mask_data.loc[index, 'segmentation'], ImageShape)
   maskImage=get_mask(p_loc,ImageShape)
   return maskImage
+
 
 def CorrectImagesDimensions(width,height,image,maskImage):
     added = height-width
@@ -137,25 +143,29 @@ def ShowImages(image,maskImage):
   ax[2].imshow(apply_mask(image, maskImage))
   plt.show()
 
-def PrepareImageAndMask(index,mask_data,image_details):
+def PrepareImageAndMask(index,numCase,day,numSlice,mask_data,image_details):
   
-  curr_id = mask_data.loc[index, 'id']
-  splits = curr_id.split('_')
-  x = image_details[(image_details['Case_no']==int(splits[0][4:]))
-                  &(image_details['Day']==int(splits[1][3:]))
-                  &(image_details['Slice_no']==int(splits[3]))]
+  
+  
+  x = image_details[(image_details['Case_no']==numCase)
+                  &(image_details['Day']==day)
+                  &(image_details['Slice_no']==numSlice)]
 
 
   image=CreateImage(path=x['Path'].values[0])  
-  maskImage=CreateMask(index,x,mask_data,image.shape)
+  maskImage=CreateMask(index,mask_data,image.shape)
 
   if x.Height.values[0]!=x.Width.values[0]:    
     image,maskImage=CorrectImagesDimensions(x.Width.values[0], x.Height.values[0],image,maskImage)
   return image,maskImage
 
+
+
+
 for i in range(1):
   index = index_list[np.random.randint(0,len(index_list) - 1)]
-  image,maskImage=PrepareImageAndMask(index,mask_data,image_details)
+  curr_organ_data=mask_data.loc[index]
+  image,maskImage=PrepareImageAndMask(index,curr_organ_data['num_case'],curr_organ_data['day'],curr_organ_data['num_slice'],mask_data,image_details)
 
   ShowImages(image,maskImage)
   
