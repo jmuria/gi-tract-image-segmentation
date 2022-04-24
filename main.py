@@ -8,6 +8,7 @@ from PIL import Image
 from skimage import color
 from glob import glob
 from OrgansInSlicesData import OrgansInSlicesData
+from OrgansInSlicesMasks import OrgansInSlicesMasks
 import warnings
 
 
@@ -64,22 +65,6 @@ ShowSomeImages(0,image_details)
 
 
 
-def get_pixel_loc(rle_string, img_shape):
-  rle = [int(i) for i in rle_string.split(' ')]
-  pairs = list(zip(rle[0::2],rle[1::2]))
-
-  # This for loop will help to understand better the above command.
-  # pairs = []
-  # for i in range(0, len(rle), 2):
-  #   a.append((rle[i], rle[i+1])
-
-  p_loc = []     #   Pixel Locations
-
-  for start, length in pairs:
-    for p_pos in range(start, start + length):
-      p_loc.append((p_pos % img_shape[1], p_pos // img_shape[0]))
-  
-  return p_loc
 
 
 
@@ -98,6 +83,26 @@ def CreateOrganTypesList(dataset):
     return dict_organ_type_encoded
 dict_organ_type=CreateOrganTypesList(mask_data)
 
+"""
+
+
+def get_pixel_loc(rle_string, img_shape):
+  rle = [int(i) for i in rle_string.split(' ')]
+  pairs = list(zip(rle[0::2],rle[1::2]))
+
+  # This for loop will help to understand better the above command.
+  # pairs = []
+  # for i in range(0, len(rle), 2):
+  #   a.append((rle[i], rle[i+1])
+
+  p_loc = []     #   Pixel Locations
+
+  for start, length in pairs:
+    for p_pos in range(start, start + length):
+      p_loc.append((p_pos % img_shape[1], p_pos // img_shape[0]))
+  
+  return p_loc
+
 def get_mask(mask, img_shape):
   
   canvas = np.zeros(img_shape).T
@@ -109,20 +114,23 @@ def get_mask(mask, img_shape):
 
   return canvas.T
 
-def apply_mask(image, maskImage):  
-  image = image / image.max()
-  image = np.dstack((image, maskImage,image)) 
-  return image
 
 
-def CreateImage(path):
-    return  np.array(Image.open(path))
 
 def CreateMask(index,mask_data,ImageShape):   
   p_loc = get_pixel_loc(mask_data.loc[index, 'segmentation'], ImageShape)
   maskImage=get_mask(p_loc,ImageShape)
   return maskImage
 
+
+"""
+def CreateImage(path):
+    return  np.array(Image.open(path))
+
+def apply_mask(image, maskImage):  
+  image = image / image.max()
+  image = np.dstack((image, maskImage,image)) 
+  return image
 
 def CorrectImagesDimensions(width,height,image,maskImage):
     added = height-width
@@ -144,16 +152,15 @@ def ShowImages(image,maskImage):
   plt.show()
 
 def PrepareImageAndMask(index,numCase,day,numSlice,mask_data,image_details):
-  
-
-  
+    
   x = image_details[(image_details['Case_no']==numCase)
                   &(image_details['Day']==day)
                   &(image_details['Slice_no']==numSlice)]
 
 
   image=CreateImage(path=x['Path'].values[0])  
-  maskImage=CreateMask(index,mask_data,image.shape)
+    
+  maskImage=OrgansInSlicesMasks.CreateMasks(mask_data,numCase,day,numSlice,image.shape[0],image.shape[1])
 
   if x.Height.values[0]!=x.Width.values[0]:    
     image,maskImage=CorrectImagesDimensions(x.Width.values[0], x.Height.values[0],image,maskImage)

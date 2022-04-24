@@ -11,9 +11,9 @@ def apply_mask(image, maskImage):
         return image
 
 def ShowMask(maskImage):
-    fig, ax = plt.subplots(1,3, figsize=(10,10))
-    ax[0].set_title('Mask ('+str(maskImage.shape[0])+','+str(maskImage.shape[1])+')')
-    ax[0].imshow(maskImage)    
+    fig, ax = plt.subplots(1,1, figsize=(10,10))
+    ax.set_title('Mask ('+str(maskImage.shape[0])+','+str(maskImage.shape[1])+')')
+    ax.imshow(maskImage)    
     plt.show()
 
 class TestOrgansInSlicesMasks(unittest.TestCase):
