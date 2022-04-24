@@ -47,7 +47,15 @@ class TestOrgansInSlicesMasks(unittest.TestCase):
         ShowMask(maskImage[1],"small_bowel")
         ShowMask(maskImage[2],"stomach")
 
-
+    def test_ICanCorrectNoSquareMasks(self):
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskImages,maskClasses=OrgansInSlicesMasks.CreateMasks(maskData,9,22,73,360,310)
+        self.assertEqual(maskImages[0].shape[0], 310)
+        self.assertEqual(maskImages[0].shape[1], 360)
+        maskImages=OrgansInSlicesMasks.CorrectNoSquareMasks(maskImages,maskImages[0].shape[0],maskImages[0].shape[1])
+        self.assertEqual(maskImages[0].shape[0], 360)
+        self.assertEqual(maskImages[0].shape[1], 360)
+        ShowMask(maskImages[0],"large_bowel")
 
 
 if __name__ == '__main__':

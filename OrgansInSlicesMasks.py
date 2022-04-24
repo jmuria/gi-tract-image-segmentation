@@ -2,6 +2,7 @@ from OrgansInSlicesData import OrgansInSlicesData
 import numpy as np
 
 class OrgansInSlicesMasks:
+    noSquareImagesOffset=50
 
     def get_pixel_loc(rle_string, width,height):
         rle = [int(i) for i in rle_string.split(' ')]
@@ -44,3 +45,15 @@ class OrgansInSlicesMasks:
         for index, row in maskInSlices.iterrows():
              maskImage.append(OrgansInSlicesMasks.CreateMask(row,width,height))
         return  maskImage,maskClasses
+    
+    def CorrectMaskHeight(height,width,maskImage):
+        added = width-height
+        added2Mask=OrgansInSlicesMasks.noSquareImagesOffset    
+        maskImage = np.concatenate((np.zeros((added2Mask,width)),maskImage),axis=0)   
+        maskImage = np.concatenate((maskImage,np.zeros((added-added2Mask,width))),axis=0)   
+        return maskImage
+
+    def CorrectNoSquareMasks(maskImages,width,height):
+        for index in range(len(maskImages)):
+            maskImages[index]=OrgansInSlicesMasks.CorrectMaskHeight(width, height,maskImages[index])
+        return maskImages

@@ -9,6 +9,7 @@ from skimage import color
 from glob import glob
 from OrgansInSlicesData import OrgansInSlicesData
 from OrgansInSlicesMasks import OrgansInSlicesMasks
+from ScanImage import ScanImage
 import warnings
 
 
@@ -32,7 +33,8 @@ def PrepareImageDataFromFolder():
   image_details['Slice_no'] = splits[1].astype(int)
   image_details['Height'] = splits[2].astype(int)
   image_details['Width'] = splits[3].astype(int)
-  
+  image_details['Pix_Heigh'] = splits[4].astype(float)
+  image_details['Pix_Width'] = splits[5].str[:-4].astype(float)
   return image_details
 
 
@@ -84,8 +86,6 @@ def CreateOrganTypesList(dataset):
 dict_organ_type=CreateOrganTypesList(mask_data)
 
 
-def CreateImage(path):
-    return  np.array(Image.open(path))
 
 def apply_mask(image, maskImage):  
   image = image / image.max()
@@ -97,12 +97,7 @@ def CorrectImagesDimensions(width,height,image):
     image = np.concatenate((np.zeros((added,height)),image),axis=0)    
     return image
 
-def CorrectMaskDimensions(width,height,maskImage):
-    added = height-width
-    added2Mask=50    
-    maskImage = np.concatenate((np.zeros((added2Mask,height)),maskImage),axis=0)   
-    maskImage = np.concatenate((maskImage,np.zeros((added-added2Mask,height))),axis=0)   
-    return maskImage
+
 
 def ShowImages(image,maskImage,applyMerge):
   fig, ax = plt.subplots(1,3, figsize=(10,10))
@@ -122,14 +117,13 @@ def PrepareImageAndMask(numCase,day,numSlice,mask_data,image_details):
                   &(image_details['Slice_no']==numSlice)]
 
 
-  image=CreateImage(path=x['Path'].values[0])  
+  image=ScanImage.Create(path=x['Path'].values[0])  
     
   maskImage,maskClasses=OrgansInSlicesMasks.CreateMasks(mask_data,numCase,day,numSlice,image.shape[1],image.shape[0])
  
   if x.Height.values[0]!=x.Width.values[0]:   
-      image=CorrectImagesDimensions(x.Width.values[0],x.Height.values[0],image)  
-      for index in range(len(maskImage)):
-        maskImage[index]=CorrectMaskDimensions(x.Width.values[0], x.Height.values[0],maskImage[index])
+      image=CorrectImagesDimensions(x.Width.values[0],x.Height.values[0],image) 
+      maskImage=OrgansInSlicesMasks.CorrectNoSquareMasks(maskImage,x.Width.values[0], x.Height.values[0])       
   return image,maskImage
 
 
