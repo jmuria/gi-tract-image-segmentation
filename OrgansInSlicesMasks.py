@@ -16,13 +16,13 @@ class OrgansInSlicesMasks:
 
         for start, length in pairs:
             for p_pos in range(start, start + length):
-                p_loc.append((p_pos % width, p_pos // height))
+                p_loc.append((p_pos % width, p_pos // width))
         
         return p_loc
     
     def get_mask(mask, width,height):
 
-        canvas = np.zeros([width,height]).T
+        canvas = np.zeros([height,width]).T
         canvas[tuple(zip(*mask))] = 1
 
         # This is the Equivalent for loop of the above command for better understanding.
@@ -32,12 +32,15 @@ class OrgansInSlicesMasks:
         return canvas.T
 
     def CreateMask(mask_data,width,height):   
-        maskSegmentation=mask_data['segmentation'].values[0]
+        maskSegmentation=mask_data['segmentation']
         p_loc = OrgansInSlicesMasks.get_pixel_loc(maskSegmentation, width,height)
         maskImage=OrgansInSlicesMasks.get_mask(p_loc,width,height)
         return maskImage
 
     def CreateMasks(maskData,numCase,day,numSlice,width,height):
+        maskImage=[]
         maskInSlices=OrgansInSlicesData.RetriveMaskInfo(maskData,numCase,day,numSlice)
-        maskImage=OrgansInSlicesMasks.CreateMask(maskInSlices,width,height) 
-        return  maskImage
+        maskClasses=maskInSlices['class'].values
+        for index, row in maskInSlices.iterrows():
+             maskImage.append(OrgansInSlicesMasks.CreateMask(row,width,height))
+        return  maskImage,maskClasses

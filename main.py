@@ -83,47 +83,7 @@ def CreateOrganTypesList(dataset):
     return dict_organ_type_encoded
 dict_organ_type=CreateOrganTypesList(mask_data)
 
-"""
 
-
-def get_pixel_loc(rle_string, img_shape):
-  rle = [int(i) for i in rle_string.split(' ')]
-  pairs = list(zip(rle[0::2],rle[1::2]))
-
-  # This for loop will help to understand better the above command.
-  # pairs = []
-  # for i in range(0, len(rle), 2):
-  #   a.append((rle[i], rle[i+1])
-
-  p_loc = []     #   Pixel Locations
-
-  for start, length in pairs:
-    for p_pos in range(start, start + length):
-      p_loc.append((p_pos % img_shape[1], p_pos // img_shape[0]))
-  
-  return p_loc
-
-def get_mask(mask, img_shape):
-  
-  canvas = np.zeros(img_shape).T
-  canvas[tuple(zip(*mask))] = 1
-
-  # This is the Equivalent for loop of the above command for better understanding.
-  # for pos in range(len(p_loc)):
-  #   canvas[pos[0], pos[1]] = 1
-
-  return canvas.T
-
-
-
-
-def CreateMask(index,mask_data,ImageShape):   
-  p_loc = get_pixel_loc(mask_data.loc[index, 'segmentation'], ImageShape)
-  maskImage=get_mask(p_loc,ImageShape)
-  return maskImage
-
-
-"""
 def CreateImage(path):
     return  np.array(Image.open(path))
 
@@ -132,26 +92,30 @@ def apply_mask(image, maskImage):
   image = np.dstack((image, maskImage,image)) 
   return image
 
-def CorrectImagesDimensions(width,height,image,maskImage):
+def CorrectImagesDimensions(width,height,image):
+    added = height-width        
+    image = np.concatenate((np.zeros((added,height)),image),axis=0)    
+    return image
+
+def CorrectMaskDimensions(width,height,maskImage):
     added = height-width
-    added2Mask=30
-    image = np.concatenate((np.zeros((added,height)),image),axis=0)
+    added2Mask=50    
     maskImage = np.concatenate((np.zeros((added2Mask,height)),maskImage),axis=0)   
     maskImage = np.concatenate((maskImage,np.zeros((added-added2Mask,height))),axis=0)   
-    return image,maskImage
+    return maskImage
 
-
-def ShowImages(image,maskImage):
+def ShowImages(image,maskImage,applyMerge):
   fig, ax = plt.subplots(1,3, figsize=(10,10))
   ax[0].set_title('Image ('+str(image.shape[0])+','+str(image.shape[1])+')')
   ax[0].imshow(image)
   ax[1].set_title('Mask')    
   ax[1].imshow(maskImage)
-  ax[2].set_title('Merged')
-  ax[2].imshow(apply_mask(image, maskImage))
+  if applyMerge:
+    ax[2].set_title('Merged')
+    ax[2].imshow(apply_mask(image, maskImage))
   plt.show()
 
-def PrepareImageAndMask(index,numCase,day,numSlice,mask_data,image_details):
+def PrepareImageAndMask(numCase,day,numSlice,mask_data,image_details):
     
   x = image_details[(image_details['Case_no']==numCase)
                   &(image_details['Day']==day)
@@ -160,20 +124,24 @@ def PrepareImageAndMask(index,numCase,day,numSlice,mask_data,image_details):
 
   image=CreateImage(path=x['Path'].values[0])  
     
-  maskImage=OrgansInSlicesMasks.CreateMasks(mask_data,numCase,day,numSlice,image.shape[0],image.shape[1])
-
-  if x.Height.values[0]!=x.Width.values[0]:    
-    image,maskImage=CorrectImagesDimensions(x.Width.values[0], x.Height.values[0],image,maskImage)
+  maskImage,maskClasses=OrgansInSlicesMasks.CreateMasks(mask_data,numCase,day,numSlice,image.shape[1],image.shape[0])
+ 
+  if x.Height.values[0]!=x.Width.values[0]:   
+      image=CorrectImagesDimensions(x.Width.values[0],x.Height.values[0],image)  
+      for index in range(len(maskImage)):
+        maskImage[index]=CorrectMaskDimensions(x.Width.values[0], x.Height.values[0],maskImage[index])
   return image,maskImage
 
 
 
 
 for i in range(1):
-  index = index_list[np.random.randint(0,len(index_list) - 1)]
-  curr_organ_data=mask_data.loc[index]
-  image,maskImage=PrepareImageAndMask(index,curr_organ_data['num_case'],curr_organ_data['day'],curr_organ_data['num_slice'],mask_data,image_details)
-
-  ShowImages(image,maskImage)
+  #index = index_list[np.random.randint(0,len(index_list) - 1)]
+  #curr_organ_data=mask_data.loc[index]
+  #image,maskImage=PrepareImageAndMask(curr_organ_data['num_case'],curr_organ_data['day'],curr_organ_data['num_slice'],mask_data,image_details)
+  image,maskImage=PrepareImageAndMask(9,22,73,mask_data,image_details)
+  ShowImages(image,maskImage[0],True)
+  ShowImages(image,maskImage[1],True)
+  ShowImages(image,maskImage[2],True)
   
 plt.show()
