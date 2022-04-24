@@ -2,7 +2,7 @@ import unittest
 from  OrgansInSlicesData import OrgansInSlicesData
  
  
-class TestStringMethods(unittest.TestCase):
+class TestOrgansInSlicesData(unittest.TestCase):
 
     def test_upper(self):
         self.assertEqual('foo'.upper(), 'FOO')

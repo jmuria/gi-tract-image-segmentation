@@ -145,7 +145,7 @@ def ShowImages(image,maskImage):
 
 def PrepareImageAndMask(index,numCase,day,numSlice,mask_data,image_details):
   
-  
+
   
   x = image_details[(image_details['Case_no']==numCase)
                   &(image_details['Day']==day)
