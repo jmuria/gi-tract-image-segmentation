@@ -35,6 +35,6 @@ class ConvolutionalNetwork:
 
 
     def PlotModel(self):
-        tf.keras.utils.plot_model(self.model,to_file='Model_Diagram.png',show_shapes=True, show_layer_names=True, expand_nested=True)
+        tf.keras.utils.plot_model(self.model,to_file='../output/Model_Diagram.png',show_shapes=True, show_layer_names=True, expand_nested=True)
 
     
