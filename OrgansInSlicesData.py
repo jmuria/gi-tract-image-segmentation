@@ -4,6 +4,12 @@ import pandas as pd
 class OrgansInSlicesData:
     numCase=0
 
+    organ_type_mapping = {
+        'large_bowel': 1,
+        'small_bowel': 2,
+        'stomach': 3
+        }
+
     def PrepareImageDataFromDatabase():
         df = pd.read_csv('../input/uw-madison-gi-tract-image-segmentation/train.csv')
         mask_data = df[df['segmentation'].notnull()]

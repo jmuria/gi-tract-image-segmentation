@@ -32,8 +32,13 @@ class OrgansInSlicesMasks:
 
         return canvas.T
 
+    def CreateEmptyMask( width,height):
+
+        return  np.zeros([width,height]).T        
+        
+
     def CreateMask(mask_data,width,height):   
-        maskSegmentation=mask_data['segmentation']
+        maskSegmentation=mask_data['segmentation'].values[0]
         p_loc = OrgansInSlicesMasks.get_pixel_loc(maskSegmentation, width,height)
         maskImage=OrgansInSlicesMasks.get_mask(p_loc,width,height)
         return maskImage
@@ -42,8 +47,17 @@ class OrgansInSlicesMasks:
         maskImage=[]
         maskInSlices=OrgansInSlicesData.RetriveMaskInfo(maskData,numCase,day,numSlice)
         maskClasses=maskInSlices['class'].values
-        for index, row in maskInSlices.iterrows():
-             maskImage.append(OrgansInSlicesMasks.CreateMask(row,width,height))
+        #for index, row in maskInSlices.iterrows():
+        #     maskImage.append(OrgansInSlicesMasks.CreateMask(row,width,height))
+
+        maskImage.append(OrgansInSlicesMasks.CreateEmptyMask(width,height)) #Background
+        for organType in OrgansInSlicesData.organ_type_mapping:
+            organIndex=maskInSlices.index[maskInSlices['class'] == organType].tolist()
+            if( len(organIndex)>0):
+                maskImage.append(OrgansInSlicesMasks.CreateMask(maskInSlices.loc[organIndex],width,height))
+            else:
+                maskImage.append(OrgansInSlicesMasks.CreateEmptyMask(width,height)) #Empty mask
+        
         return  maskImage,maskClasses
     
     def CorrectMaskHeight(height,width,maskImage):

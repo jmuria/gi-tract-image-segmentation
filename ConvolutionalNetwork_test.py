@@ -3,6 +3,8 @@ from  ScanImage import ScanImage
 import matplotlib.pyplot as plt
 import numpy as np
 from ConvolutionalNetwork import ConvolutionalNetwork
+from OrgansInSlicesData import OrgansInSlicesData
+from OrgansInSlicesMasks import OrgansInSlicesMasks
 
 
 
@@ -18,7 +20,7 @@ class TestConvolutionalNetwork(unittest.TestCase):
         convNetwork=ConvolutionalNetwork()
         model=convNetwork.CreateModel()
         self.assertIsNotNone(model)
-        convNetwork.PrepareInput(300,300,1)
+        convNetwork.PrepareInput(360,360,1)
        
     
 
@@ -27,9 +29,24 @@ class TestConvolutionalNetwork(unittest.TestCase):
         convNetwork=ConvolutionalNetwork()
         model=convNetwork.CreateModel()
         self.assertIsNotNone(model)
-        convNetwork.PrepareInput(300,300,1)
-        convNetwork.PrepareOutput(300,300,4)
+        convNetwork.PrepareInput(360,360,1)
+        convNetwork.PrepareOutput(360,360,4)
         convNetwork.CompileModel()
         convNetwork.PlotModel()
 
-      
+'''
+      def test_ICanTrainTheModelWithTheExpectedImages(self):
+        convNetwork=ConvolutionalNetwork()
+        model=convNetwork.CreateModel()
+        self.assertIsNotNone(model)
+        convNetwork.PrepareInput(360,360,1)
+        convNetwork.PrepareOutput(360,360,4)
+        convNetwork.CompileModel()
+
+        filePath='..\\input\\uw-madison-gi-tract-image-segmentation\\train\\case101\\case101_day20\\scans\\slice_0001_266_266_1.50_1.50.png'
+        image=ScanImage.Create(filePath) 
+        image=ScanImage.ResizeWithoutScaling(image,360,360)
+        
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskImages,maskClasses=OrgansInSlicesMasks.CreateMasks(maskData,101,20,1,266,266)
+        '''
