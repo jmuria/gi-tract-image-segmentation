@@ -10,31 +10,36 @@ import matplotlib.pyplot as plt
 
 from keras import datasets, layers, models
 
+from OrgansInSlicesData import OrgansInSlicesData
+
 
 class OrganDataset(tf.keras.utils.Sequence):
     def __init__(self, 
                  images,                 
-                 masks,                 
-                 # data_dir = data_dir,
+                 masks,                                 
                  target_shape,
-                 #image_trans = transforms.ToTensor(),                 
+                 batch_size
                 ):
         self.images = images
         self.masks= masks  
-        self.batch_size=1
+        self.batch_size=batch_size
         (self.train_images, self.train_labels), (self.test_images, self.test_labels) = datasets.cifar10.load_data()      
         self.target_shape = target_shape        
         #self.target_image_res = target_image_res
     def __len__(self):
         return len(self.images)
     def __getitem__(self, idx):
-        #x = np.zeros((self.batch_size,) + self.target_shape + (3,), dtype="float32")
+        i = idx * self.batch_size
+        batch_input_img_paths = self.images[i : i + self.batch_size]
+        batch_target_img_paths = self.masks[i : i + self.batch_size]
+
         x = np.zeros((self.batch_size,) + self.target_shape , dtype="float32")
-        for j, img in enumerate(self.images):            
+        for j, img in enumerate(batch_input_img_paths):            
             x[j] = img
         y = np.zeros((self.batch_size,) +  self.target_shape + (1,), dtype="uint8")
-        for j, img in enumerate(self.masks): 
-            y[j] = np.expand_dims(img[0], axis=2)           
+        for j, img in enumerate(batch_target_img_paths): 
+            for organIndex in range(len(OrgansInSlicesData.organ_type_mapping)):
+                y[j] = y[j] + np.expand_dims(img[0]*(organIndex+1), axis=2)           
             #y[j] = y[j]+img[0]
             # Ground truth labels are 1, 2, 3. Subtract one to make them 0, 1, 2:    
             #y[j] -= 1       
@@ -50,14 +55,6 @@ class ConvolutionalNetwork:
         return self.model
     
     def PrepareInput(self,width,height,nChannels):        
-        '''self.model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(width, height, nChannels)))
-        self.model.add(layers.MaxPooling2D((2, 2)))
-        self.model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-        self.model.add(layers.MaxPooling2D((2, 2)))
-        self.model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-        self.model.add(layers.Flatten())
-        self.model.add(layers.Dense(64, activation='relu'))
-        self.model.add(layers.Dense(10))'''
         self.Input= layers.Input(shape=(width,height,nChannels))
         self.PreviousLayer = layers.Conv2D(32, 3, strides=2, padding="same")(self.Input)
     
@@ -107,15 +104,14 @@ class ConvolutionalNetwork:
     def PrepareOutput(self,width,height,nChannels):        
         self.Output = layers.Conv2D(nChannels, 3, activation="sigmoid", padding="same")(self.PreviousLayer)
         
-        #self.Output = layers.Conv2DTranspose(nChannels, 1, padding="same", activation = "sigmoid",input_shape=(360, 360, 1))
-        #self.model.add(layers.Conv2D(32, (3, 3), activation='sigmoid'))
+
     
     def CompileModel(self):
         self.model = tf.keras.Model(self.Input, self.Output, name="U-Net")
 
         try:
             self.model.compile(optimizer='adam',
-              loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
+              loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
 
         except BaseException as err:
@@ -123,20 +119,10 @@ class ConvolutionalNetwork:
             raise
 
             
-    def Train(self,X,Y,image_shape):
+    def Train(self,X,Y,image_shape,batch_size=1):
+        
 
-        '''
-        X = tf.convert_to_tensor(X, dtype=tf.int8)
-        X2=[]
-        X2.append(X)
-
-        Y2=[]
-        for i  in range(len(Y)):
-            Y[i]=tf.convert_to_tensor(Y[i], dtype=tf.int8)
-        Y2.append(Y)
-        '''
-
-        data=OrganDataset(X,Y,image_shape)
+        data=OrganDataset(X,Y,image_shape,batch_size)
 
         history=self.model.fit(data, epochs=10 
                     #,validation_data=(test_images, test_labels)
