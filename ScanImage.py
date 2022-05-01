@@ -17,7 +17,7 @@ class ScanImage:
         addedWidth=newWidth-image.shape[1]
         rightFrame=np.zeros((newHeight,addedWidth))
         image= np.hstack((image,rightFrame))
-
+        
         return image
 
 
