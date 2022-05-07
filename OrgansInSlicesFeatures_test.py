@@ -40,6 +40,35 @@ class TestOrgansInSlicesFeatures(unittest.TestCase):
         ShowMask(y[0],"Mask 0") 
 
 
+    def test_ICanPrepareTwoCases(self):
+        features= OrgansInSlicesFeatures()
+        x,y=features.Prepare(2,368,368,1.50)
+        self.assertEqual(len(x), 2)
+        self.assertEqual(len(y), 2)
+        self.assertEqual(x[0].shape, (368,368))
+        self.assertEqual(y[0].shape, (368,368,1))
+        self.assertEqual(x[1].shape, (368,368))
+        self.assertEqual(y[1].shape, (368,368,1))
+        ShowMask(x[0],"Image 0")
+        ShowMask(y[0],"Mask 0") 
+        ShowMask(x[1],"Image 1")
+        ShowMask(y[1],"Mask 1") 
+    
+    def test_ICanPrepare100Cases(self):
+        features= OrgansInSlicesFeatures()
+        x,y=features.Prepare(100,368,368,1.50)
+        self.assertEqual(len(x), 100)
+        self.assertEqual(len(y), 100)
+        self.assertEqual(x[0].shape, (368,368))
+        self.assertEqual(y[0].shape, (368,368,1))
+        self.assertEqual(x[99].shape, (368,368))
+        self.assertEqual(y[99].shape, (368,368,1))
+        ShowMask(x[0],"Image 0")
+        ShowMask(y[0],"Mask 0") 
+        ShowMask(x[99],"Image 1")
+        ShowMask(y[99],"Mask 1") 
+
+
 if __name__ == '__main__':
     unittest.main()
     
