@@ -52,12 +52,8 @@ class TestOrgansInSlicesMasks(unittest.TestCase):
 
     def test_ICanCreateACombinedMaskFromACaseDayandSlice(self):
         maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
-        maskImage,maskClasses=OrgansInSlicesMasks.CreateCombinedMask(maskData,9,22,73,360,310)
-        self.assertEqual(maskImage.shape, (310,360,1))
-        self.assertEqual(len(maskClasses), 3)        
-        self.assertEqual(maskClasses[0], "large_bowel")
-        self.assertEqual(maskClasses[1], "small_bowel")
-        self.assertEqual(maskClasses[2], "stomach")        
+        maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,9,22,73,360,310)
+        self.assertEqual(maskImage.shape, (310,360,1))        
         ShowMask(maskImage,"Combined")
         print(maskImage)
         

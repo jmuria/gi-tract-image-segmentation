@@ -62,12 +62,16 @@ class OrgansInSlicesMasks:
     
     def CreateCombinedMask(maskData,numCase,day,numSlice,width,height):
         maskImages,maskClasses= OrgansInSlicesMasks.CreateMasks(maskData,numCase,day,numSlice,width,height)
+        return OrgansInSlicesMasks.CreateCombinedMaskFromImages(maskImages,width,height)        
+        
+
+    def CreateCombinedMaskFromImages(maskImages,width,height):        
         combinedMaskImage = np.zeros((height,width) + (1,), dtype="uint8")
         increase=255/len(maskImages)
         for organIndex in range(len(OrgansInSlicesData.organ_type_mapping)):
                 combinedMaskImage = combinedMaskImage + np.expand_dims(maskImages[organIndex+1]*increase*(organIndex+1), axis=2)      
                 
-        return  combinedMaskImage,maskClasses
+        return  combinedMaskImage
     
     def CorrectMaskHeight(height,width,maskImage):
         added = width-height

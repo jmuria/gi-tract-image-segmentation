@@ -50,7 +50,7 @@ class TestConvolutionalNetwork(unittest.TestCase):
         image=ScanImage.ResizeWithoutScaling(image,368,368)
     
         maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
-        maskImage,maskClasses=OrgansInSlicesMasks.CreateCombinedMask(maskData,101,20,1,368,368)
+        maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,101,20,1,368,368)
        
        
         convNetwork.Train([image],[maskImage],(368,368))
@@ -79,9 +79,9 @@ class TestConvolutionalNetwork(unittest.TestCase):
     
         maskOrgansImages=[]
         maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
-        maskImage,maskClasses=OrgansInSlicesMasks.CreateCombinedMask(maskData,101,20,1,368,368)
+        maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,101,20,1,368,368)
         maskOrgansImages.append(maskImage)
-        maskImage,maskClasses=OrgansInSlicesMasks.CreateCombinedMask(maskData,43,22,82,368,368)
+        maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,43,22,82,368,368)
         maskOrgansImages.append(maskImage)
        
        
