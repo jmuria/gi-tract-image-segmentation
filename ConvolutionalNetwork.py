@@ -36,10 +36,16 @@ class OrganDataset(tf.keras.utils.Sequence):
         x = np.zeros((self.batch_size,) + self.target_shape , dtype="float32")
         for j, img in enumerate(batch_input_img_paths):            
             x[j] = img
+        
         y = np.zeros((self.batch_size,) +  self.target_shape + (1,), dtype="uint8")
+        for j, img in enumerate(batch_target_img_paths):            
+            y[j] = img
+        '''
+        y = np.zeros((self.batch_size,) +  self.target_shape + (1,), dtype="uint8")
+        increase=255/len(batch_target_img_paths)
         for j, img in enumerate(batch_target_img_paths): 
             for organIndex in range(len(OrgansInSlicesData.organ_type_mapping)):
-                y[j] = y[j] + np.expand_dims(img[0]*(organIndex+1), axis=2)           
+                y[j] = y[j] + np.expand_dims(increase*(organIndex+1), axis=2)   '''        
             #y[j] = y[j]+img[0]
             # Ground truth labels are 1, 2, 3. Subtract one to make them 0, 1, 2:    
             #y[j] -= 1       
@@ -119,16 +125,26 @@ class ConvolutionalNetwork:
             raise
 
             
-    def Train(self,X,Y,image_shape,batch_size=1):
+    def Train(self,X,Y,image_shape,batch_size=1,epochs=10):
         
 
         data=OrganDataset(X,Y,image_shape,batch_size)
 
-        history=self.model.fit(data, epochs=10 
+        history=self.model.fit(data, epochs=epochs 
                     #,validation_data=(test_images, test_labels)
                      )
+        return history
 
     def PlotModel(self):
         tf.keras.utils.plot_model(self.model,to_file='../output/Model_Diagram.png',show_shapes=True, show_layer_names=True, expand_nested=True)
 
+    def PlotHistory(history):
+        # summarize history for accuracy
+        plt.plot(history.history['accuracy'])
+        #plt.plot(history.history['val_accuracy'])
+        plt.title('model accuracy')
+        plt.ylabel('accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train'], loc='upper left')
+        plt.show()
     

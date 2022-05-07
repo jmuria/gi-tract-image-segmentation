@@ -50,10 +50,10 @@ class TestConvolutionalNetwork(unittest.TestCase):
         image=ScanImage.ResizeWithoutScaling(image,368,368)
     
         maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
-        maskImages,maskClasses=OrgansInSlicesMasks.CreateMasks(maskData,101,20,1,368,368)
+        maskImage,maskClasses=OrgansInSlicesMasks.CreateCombinedMask(maskData,101,20,1,368,368)
        
        
-        convNetwork.Train([image],[maskImages],(368,368))
+        convNetwork.Train([image],[maskImage],(368,368))
       
 
      def test_ICanTrainTheModelWithMoreThanOneCase(self):
@@ -79,10 +79,13 @@ class TestConvolutionalNetwork(unittest.TestCase):
     
         maskOrgansImages=[]
         maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
-        maskImages,maskClasses=OrgansInSlicesMasks.CreateMasks(maskData,101,20,1,368,368)
-        maskOrgansImages.append(maskImages)
-        maskImages,maskClasses=OrgansInSlicesMasks.CreateMasks(maskData,43,22,82,368,368)
-        maskOrgansImages.append(maskImages)
+        maskImage,maskClasses=OrgansInSlicesMasks.CreateCombinedMask(maskData,101,20,1,368,368)
+        maskOrgansImages.append(maskImage)
+        maskImage,maskClasses=OrgansInSlicesMasks.CreateCombinedMask(maskData,43,22,82,368,368)
+        maskOrgansImages.append(maskImage)
        
        
-        convNetwork.Train(images,maskOrgansImages,(368,368),batch_size=2)
+        history=convNetwork.Train(images,maskOrgansImages,(368,368),batch_size=2,epochs=50)
+       
+        ConvolutionalNetwork.PlotHistory(history)
+        
