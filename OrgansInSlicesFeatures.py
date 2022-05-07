@@ -8,30 +8,43 @@ from ScanImage import ScanImage
 class OrgansInSlicesFeatures:
     basePath='..\\input\\uw-madison-gi-tract-image-segmentation\\train\\'
 
+
+    def HomogenizePixelSize(self,image,maskImages,pixelSize,expectedPixelSize):
+        if pixelSize!=expectedPixelSize:
+            image=ScanImage.ConvertPixelSize(image,pixelSize,expectedPixelSize)
+            for i,maskimage in enumerate(maskImages):
+                maskImages[i]=ScanImage.ConvertPixelSize(maskimage,pixelSize,expectedPixelSize)
+        return image,maskImages
+
+    def HomogenizeImageSize(self,image,maskImages,sampleHeight,expectedHeight,sampleWidth,expectedWidth):
+        if(expectedHeight!=sampleHeight | expectedWidth!= sampleWidth ):
+            image=ScanImage.ResizeWithoutScaling(image,expectedHeight,expectedWidth)
+            for i,maskimage in enumerate(maskImages):
+                maskImages[i]=ScanImage.ResizeWithoutScaling(maskimage,expectedHeight,expectedWidth)
+
+        return image,maskImages
+
+    def CreateSampleImage(self,row):        
+        filePath=self.CreatePath(row['num_case'],row['day'],row['num_slice'])            
+        sampleWidth,sampleHeight,samplePixelSize=OrgansInSlicesFeatures.GetSizesFromPath(filePath)
+        image=ScanImage.Create(filePath) 
+        return image,sampleWidth,sampleHeight,samplePixelSize
+
+    def PrepareSingleSample(self,row,expectedHeight, expectedWidth,expectedPixelSize):        
+        image,sampleWidth,sampleHeight,samplePixelSize=self.CreateSampleImage(row)
+        maskImages,maskClasses=OrgansInSlicesMasks.CreateMasks(self.maskData,row['num_case'],row['day'],row['num_slice'],sampleHeight,sampleWidth)
+        image,maskImages=self.HomogenizePixelSize(image,maskImages,samplePixelSize,expectedPixelSize)                
+        image,maskImages=self.HomogenizeImageSize(image,maskImages,sampleHeight,expectedHeight,sampleWidth,expectedWidth) 
+        maskImage=OrgansInSlicesMasks.CreateCombinedMaskFromImages(maskImages,expectedHeight,expectedWidth)
+        return image,maskImage
     
     def Prepare(self,numSamples, height, width,pixelSize):
         x=[]
         y=[]
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
-        for i, row in maskData.iloc[:numSamples].iterrows():    
-            filePath=self.CreatePath(row['num_case'],row['day'],row['num_slice'])            
-            sampleWidth,sampleHeight,samplePixelSize=OrgansInSlicesFeatures.GetSizesFromPath(filePath)
-            image=ScanImage.Create(filePath) 
-        
-            if samplePixelSize!=pixelSize:
-                image=ScanImage.ConvertPixelSize(image,samplePixelSize,pixelSize)
-
-        
-            maskImages,maskClasses=OrgansInSlicesMasks.CreateMasks(maskData,row['num_case'],row['day'],row['num_slice'],sampleHeight,sampleWidth)
-
-            if(height!=sampleHeight | width!= sampleWidth ):
-                 image=ScanImage.ResizeWithoutScaling(image,height,width)
-                 for i,maskimage in enumerate(maskImages):
-                    maskImages[i]=ScanImage.ResizeWithoutScaling(maskimage,height,width)
-
-            maskImage=OrgansInSlicesMasks.CreateCombinedMaskFromImages(maskImages,height,width)
-            x.append(image)
-            
+        self.maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        for i, row in self.maskData.iloc[:numSamples].iterrows():    
+            image,maskImage=self.PrepareSingleSample(row,height, width,pixelSize)            
+            x.append(image)            
             y.append(maskImage)
         return x,y
             
