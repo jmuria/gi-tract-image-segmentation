@@ -39,7 +39,7 @@ class OrganDataset(tf.keras.utils.Sequence):
         
         y = np.zeros((self.batch_size,) +  self.target_shape + (1,), dtype="uint8")
         for j, img in enumerate(batch_target_img_paths):            
-            y[j] = img
+            y[j] = img/255
         '''
         y = np.zeros((self.batch_size,) +  self.target_shape + (1,), dtype="uint8")
         increase=255/len(batch_target_img_paths)
@@ -116,10 +116,12 @@ class ConvolutionalNetwork:
         self.model = tf.keras.Model(self.Input, self.Output, name="U-Net")
 
         try:
-            self.model.compile(optimizer='adam',
-              loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
-              metrics=['accuracy'])
-
+            self.model.compile(
+                #optimizer='adam',
+                #loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),                
+                optimizer="rmsprop", 
+                loss="sparse_categorical_crossentropy",
+                metrics=['accuracy'])
         except BaseException as err:
             print(f"Unexpected {err=}, {type(err)=}")
             raise
