@@ -1,5 +1,6 @@
-from OrgansInSlicesData import OrgansInSlicesData
+import matplotlib.pyplot as plt
 import numpy as np
+from OrgansInSlicesData import OrgansInSlicesData
 
 class OrgansInSlicesMasks:
     noSquareImagesOffset=50
@@ -31,17 +32,39 @@ class OrgansInSlicesMasks:
         #   canvas[pos[0], pos[1]] = 1
 
         return canvas.T
+    
+    # read graysclae img
+    # Thanks to q-viper https://q-viper.github.io/2021/05/24/coding-run-length-encoding-in-python/
+        
+    def CreateRLEFromImage(img):
+           # ref.: https://www.kaggle.com/stainsby/fast-tested-rle
+   
+        pixels = img.flatten()
+        pixels = np.concatenate([[0], pixels, [0]])
+        runs = np.where(pixels[1:] != pixels[:-1])[0] #+ 1
+        runs[1::2] -= runs[::2]
+        return ' '.join(str(x) for x in runs)
 
     def CreateEmptyMask( width,height):
 
         return  np.zeros([width,height]).T        
-        
+    
+
+
+
+    def ShowMask(maskImage,title):
+        fig, ax = plt.subplots(1,1, figsize=(10,10))
+        ax.set_title(title+' ('+str(maskImage.shape[0])+','+str(maskImage.shape[1])+')')
+        ax.imshow(maskImage)    
+        plt.show()
 
     def CreateMask(mask_data,width,height):   
         maskSegmentation=mask_data['segmentation'].values[0]
         p_loc = OrgansInSlicesMasks.get_pixel_loc(maskSegmentation, width,height)
         maskImage=OrgansInSlicesMasks.get_mask(p_loc,width,height)
         return maskImage
+
+
 
     def CreateMasks(maskData,numCase,day,numSlice,width,height):
         maskImage=[]

@@ -69,7 +69,15 @@ class TestOrgansInSlicesMasks(unittest.TestCase):
         self.assertEqual(maskImages[0].shape[0], 360)
         self.assertEqual(maskImages[0].shape[1], 360)
         ShowMask(maskImages[1],"large_bowel")
-  
+
+    def test_ICanCreateTheRLEFromTheMaskImage(self):
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskInSlices=OrgansInSlicesData.RetriveMaskInfo(maskData,9,22,73)
+        RLEFromData=maskInSlices['segmentation'].values[0]
+        maskImages,maskClasses=OrgansInSlicesMasks.CreateMasks(maskData,9,22,73,360,310)
+        OrgansInSlicesMasks.ShowMask(maskImages[1],"Mask0")
+        createdRLE=OrgansInSlicesMasks.CreateRLEFromImage(maskImages[1])        
+        self.assertEqual(createdRLE, RLEFromData)
 
 if __name__ == '__main__':
     unittest.main()

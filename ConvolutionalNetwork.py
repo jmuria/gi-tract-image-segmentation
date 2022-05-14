@@ -23,35 +23,44 @@ class OrganDataset(tf.keras.utils.Sequence):
         self.images = images
         self.masks= masks  
         self.batch_size=batch_size
-        (self.train_images, self.train_labels), (self.test_images, self.test_labels) = datasets.cifar10.load_data()      
-        self.target_shape = target_shape        
-        #self.target_image_res = target_image_res
+        self.target_shape=target_shape
+        
     def __len__(self):
         return len(self.images)
     def __getitem__(self, idx):
         i = idx * self.batch_size
         batch_input_img_paths = self.images[i : i + self.batch_size]
-        batch_target_img_paths = self.masks[i : i + self.batch_size]
-
-        x = np.zeros((self.batch_size,) + self.target_shape , dtype="float32")
-        for j, img in enumerate(batch_input_img_paths):            
+        
+        x = np.zeros((self.batch_size,) + self.target_shape + (1,), dtype="float32")
+        for j, img in enumerate(batch_input_img_paths):
+            img = np.expand_dims(img, axis=-1)            
             x[j] = img
         
-        y = np.zeros((self.batch_size,) +  self.target_shape + (1,), dtype="uint8")
-        for j, img in enumerate(batch_target_img_paths):            
-            y[j] = img/255
-        '''
-        y = np.zeros((self.batch_size,) +  self.target_shape + (1,), dtype="uint8")
-        increase=255/len(batch_target_img_paths)
-        for j, img in enumerate(batch_target_img_paths): 
-            for organIndex in range(len(OrgansInSlicesData.organ_type_mapping)):
-                y[j] = y[j] + np.expand_dims(increase*(organIndex+1), axis=2)   '''        
-            #y[j] = y[j]+img[0]
-            # Ground truth labels are 1, 2, 3. Subtract one to make them 0, 1, 2:    
-            #y[j] -= 1       
+        if(self.masks!=None):
+            batch_target_img_paths = self.masks[i : i + self.batch_size]
+
+            y = np.zeros((self.batch_size,) +  self.target_shape + (1,), dtype="uint8")
+            for j, img in enumerate(batch_target_img_paths):            
+                y[j] = img
+      
         return x, y
 
+class DiceLoss(tf.keras.losses.Loss):
+    def __init__(self, smooth=1e-6, gama=2):
+        super(DiceLoss, self).__init__()
+        self.name = 'NDL'
+        self.smooth = smooth
+        self.gama = gama
 
+    def call(self, y_true, y_pred):
+        y_true, y_pred = tf.cast(
+            y_true, dtype=tf.float32), tf.cast(y_pred, tf.float32)
+        nominator = 2 * \
+            tf.reduce_sum(tf.multiply(y_pred, y_true)) + self.smooth
+        denominator = tf.reduce_sum(
+            y_pred ** self.gama) + tf.reduce_sum(y_true ** self.gama) + self.smooth
+        result = 1 - tf.divide(nominator, denominator)
+        return result
 
 class ConvolutionalNetwork:
     model = Any
@@ -114,13 +123,13 @@ class ConvolutionalNetwork:
     
     def CompileModel(self):
         self.model = tf.keras.Model(self.Input, self.Output, name="U-Net")
-
+        
         try:
             self.model.compile(
-                #optimizer='adam',
-                #loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),                
-                optimizer="rmsprop", 
-                loss="sparse_categorical_crossentropy",
+                optimizer='adam',
+                loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),                
+                #optimizer="rmsprop", 
+                #loss="sparse_categorical_crossentropy",
                 metrics=['accuracy'])
         except BaseException as err:
             print(f"Unexpected {err=}, {type(err)=}")
@@ -137,6 +146,15 @@ class ConvolutionalNetwork:
                      )
         return history
 
+
+    def Predict(self,testImages,image_shape):
+        #data=OrganDataset(testImages,None,image_shape,len(testImages))
+        x = np.zeros((len(testImages),) + image_shape , dtype="float32")
+        for j, img in enumerate(testImages):            
+            x[j] = img
+        val_preds = self.model.predict(x)
+        return val_preds
+
     def PlotModel(self):
         tf.keras.utils.plot_model(self.model,to_file='../output/Model_Diagram.png',show_shapes=True, show_layer_names=True, expand_nested=True)
 
@@ -149,4 +167,14 @@ class ConvolutionalNetwork:
         plt.xlabel('epoch')
         plt.legend(['train'], loc='upper left')
         plt.show()
+
+        '''
+        # summarize history for accuracy
+        plt.plot(history.history['loss'])
+        #plt.plot(history.history['val_accuracy'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train'], loc='upper left')
+        plt.show()'''
     
