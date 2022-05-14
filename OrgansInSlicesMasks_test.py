@@ -58,7 +58,16 @@ class TestOrgansInSlicesMasks(unittest.TestCase):
         print(maskImage)
         
 
-        
+    def test_ICanExtractDifferentMasksFromACombinedMask(self):
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,9,22,73,360,310)
+        self.assertEqual(maskImage.shape, (310,360,1))        
+        ShowMask(maskImage,"Combined")
+        maskArray=OrgansInSlicesMasks.ExtractMasks(maskImage,310,360)
+        ShowMask(maskArray[0],"Background")
+        ShowMask(maskArray[1],"large_bowel")
+        ShowMask(maskArray[2],"small_bowel")
+        ShowMask(maskArray[3],"stomach")
 
     def test_ICanCorrectNoSquareMasks(self):
         maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()

@@ -91,11 +91,23 @@ class OrgansInSlicesMasks:
     def CreateCombinedMaskFromImages(maskImages,width,height):        
         combinedMaskImage = np.zeros((height,width) + (1,), dtype="uint8")
         increase=255/len(maskImages)
-        for organIndex in range(len(OrgansInSlicesData.organ_type_mapping)):
-                combinedMaskImage = combinedMaskImage + np.expand_dims(maskImages[organIndex+1]*increase*(organIndex+1), axis=2)      
+        for organIndex in range(len(OrgansInSlicesData.organ_type_mapping)):            
+            combinedMaskImage = combinedMaskImage + np.expand_dims(maskImages[organIndex+1]*(organIndex+1), axis=2)
+            combinedMaskImage[combinedMaskImage>organIndex+1]=organIndex+1  
                 
         return  combinedMaskImage
     
+    def ExtractMasks(maskImage,height,width):
+        imageArray=[]        
+        imageArray.append(OrgansInSlicesMasks.CreateEmptyMask( width,height))
+        for organIndex in range(len(OrgansInSlicesData.organ_type_mapping)):
+            mask = OrgansInSlicesMasks.CreateEmptyMask( width,height)
+            mask[np.squeeze(maskImage==organIndex+1)]=1
+            imageArray.append(mask)
+        return imageArray
+
+
+
     def CorrectMaskHeight(height,width,maskImage):
         added = width-height
         added2Mask=OrgansInSlicesMasks.noSquareImagesOffset    

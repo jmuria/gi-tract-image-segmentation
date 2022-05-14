@@ -26,14 +26,9 @@ class OrgansInSlicesTestData:
         submission_data =submission_data[0:0]
         for path in filePaths:
             id=OrgansInSlicesTestData.GetFileID(path)
-
-            df2 = {'id': id, 'class': 'large_bowel','predicted': '55 55'}
-            submission_data = submission_data.append(df2, ignore_index = True)
-
-            df2 = {'id': id, 'class': 'small_bowel','predicted': '55 55'}
-            submission_data = submission_data.append(df2, ignore_index = True)
-
-            df2 = {'id': id, 'class': 'stomach','predicted': '55 55'}
-            submission_data = submission_data.append(df2, ignore_index = True)
+            for organType in {'stomach','small_bowel','large_bowel'}:
+                df2 = {'id': id, 'class': organType,'predicted': '55 55'}
+                submission_data = submission_data.append(df2, ignore_index = True)
+                
         
         return submission_data
