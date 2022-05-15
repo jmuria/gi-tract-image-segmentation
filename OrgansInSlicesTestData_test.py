@@ -13,18 +13,21 @@ def ShowImage(maskImage,title):
 
 class TestOrgansInSlicesTestData(unittest.TestCase):
      
+    basePath='../test/'
+    databasePath='../input/uw-madison-gi-tract-image-segmentation/train.csv'
+
     def test_ICanFindAFileInTheTestFolder(self):
         
-        organsTestData=OrgansInSlicesTestData()
+        organsTestData=OrgansInSlicesTestData(self.basePath)
         imagePathList=organsTestData.FindFiles()
 
         self.assertEqual(len(imagePathList),5)
 
     def test_ICanPrepareTheTestImages(self):
         
-        organsTestData=OrgansInSlicesTestData()
+        organsTestData=OrgansInSlicesTestData(self.basePath)
         imagePathList=organsTestData.FindFiles()
-        testData=OrgansInSlicesTestData()
+        
         testImages=OrgansInSlicesTestData.PrepareImages(imagePathList,368,368,1.50)
         self.assertEqual(len(testImages),5)
         ShowImage(testImages[0],"Image 0")
@@ -39,7 +42,7 @@ class TestOrgansInSlicesTestData(unittest.TestCase):
         self.assertEqual(generatedID,'case3_day4_slice_0001')
     
     def test_ICanCreateTheDatabaseLinesWithATestFileAndTheMasks(self):
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,9,22,73,360,310)
 
         testFiles=[]
@@ -60,7 +63,7 @@ class TestOrgansInSlicesTestData(unittest.TestCase):
 
 
     def test_ICanCreateTheDatabaseLinesWithTwoTestFilesAndTheMasks(self):
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,9,22,73,360,310)
 
         testFiles=[]

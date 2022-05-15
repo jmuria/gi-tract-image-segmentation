@@ -6,8 +6,10 @@ from OrgansInSlicesMasks import OrgansInSlicesMasks
 from OrgansInSlicesData import OrgansInSlicesData
 
 class OrgansInSlicesTestData:
-    basePath='../test/'
+   
 
+    def __init__(self, basePath):
+        self.basePath = basePath
     
     def FindFiles(self):
         fullPath=self.basePath+'*/*/scans/*.png'

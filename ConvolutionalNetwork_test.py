@@ -11,6 +11,8 @@ from ConvolutionalNetwork import DiceLoss
 
 
 class TestConvolutionalNetwork(unittest.TestCase):
+     databasePath='../input/uw-madison-gi-tract-image-segmentation/train.csv'
+     basePath='..\\input\\uw-madison-gi-tract-image-segmentation\\train\\'
      
      def test_ICanCreateAModel(self):
         convNetwork=ConvolutionalNetwork()
@@ -51,7 +53,7 @@ class TestConvolutionalNetwork(unittest.TestCase):
         image=ScanImage.Create(filePath) 
         image=ScanImage.ResizeWithoutScaling(image,368,368)
     
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,101,20,1,368,368)
        
        
@@ -80,7 +82,7 @@ class TestConvolutionalNetwork(unittest.TestCase):
         images.append(image)
     
         maskOrgansImages=[]
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,101,20,1,368,368)
         maskOrgansImages.append(maskImage)
         maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,43,22,82,368,368)
@@ -94,7 +96,7 @@ class TestConvolutionalNetwork(unittest.TestCase):
 
      def test_TheLossFunctionShouldBePerfectForTheSameImage(self):
          maskOrgansImages=[]
-         maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+         maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
          maskImage1=OrgansInSlicesMasks.CreateCombinedMask(maskData,101,20,1,368,368)
          y1 = np.zeros( (368,368) + (1,), dtype="uint8")
          y1 = maskImage1
@@ -118,8 +120,8 @@ class TestConvolutionalNetwork(unittest.TestCase):
         convNetwork.CompileModel()
         convNetwork.PlotModel()
 
-        features= OrgansInSlicesFeatures()
-        x,y=features.Prepare(2,368,368,1.50)
+        features= OrgansInSlicesFeatures(self.basePath)
+        x,y=features.Prepare(self.databasePath, 2,368,368,1.50)
         
    
        

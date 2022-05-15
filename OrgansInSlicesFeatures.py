@@ -6,8 +6,10 @@ from ScanImage import ScanImage
 
 
 class OrgansInSlicesFeatures:
-    basePath='..\\input\\uw-madison-gi-tract-image-segmentation\\train\\'
+   
 
+    def __init__(self, basePath):
+        self.basePath = basePath
 
     def HomogenizePixelSize(self,image,maskImages,pixelSize,expectedPixelSize):
         if pixelSize!=expectedPixelSize:
@@ -42,10 +44,10 @@ class OrgansInSlicesFeatures:
         maskImage=OrgansInSlicesMasks.CreateCombinedMaskFromImages(maskImages,expectedHeight,expectedWidth)
         return image,maskImage
     
-    def Prepare(self,numSamples, height, width,pixelSize):
+    def Prepare(self,databasePath,numSamples, height, width,pixelSize):
         x=[]
         y=[]
-        self.maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        self.maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(databasePath)
         for i, row in self.maskData.iloc[:numSamples].iterrows():    
             image,maskImage=self.PrepareSingleSample(row,height, width,pixelSize)            
             x.append(image)            

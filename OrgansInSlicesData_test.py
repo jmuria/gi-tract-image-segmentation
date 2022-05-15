@@ -4,13 +4,14 @@ from  OrgansInSlicesData import OrgansInSlicesData
  
 class TestOrgansInSlicesData(unittest.TestCase):
 
+    databasePath='../input/uw-madison-gi-tract-image-segmentation/train.csv'
     def test_upper(self):
         self.assertEqual('foo'.upper(), 'FOO')
 
 
 
     def test_TheDatabaseHasSegmentation(self):
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         self.assertTrue('segmentation' in maskData.columns)
 
     def test_ICanRetrieveTheNumCaseFromtheId(self):
@@ -26,26 +27,26 @@ class TestOrgansInSlicesData(unittest.TestCase):
         self.assertEqual(OrgansInSlicesData.RetrieveNumSliceFromID(CaseID), 2)
 
     def test_TheDatabaseHasNumCase(self):
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         #First element is case123_day20_slice_0065
         self.assertTrue('num_case' in maskData.columns)
         self.assertEqual(maskData['num_case'].iloc[:1].values, 123)
 
 
     def test_TheDatabaseHasCaseDay(self):
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         #First element is case123_day20_slice_0065
         self.assertTrue('day' in maskData.columns)
         self.assertEqual(maskData['day'].iloc[:1].values, 20)
 
     def test_TheDatabaseHasSliceDay(self):
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         #First element is case123_day20_slice_0065
         self.assertTrue('num_slice' in maskData.columns)
         self.assertEqual(maskData['num_slice'].iloc[:1].values, 65)
 
     def test_ICanRetrieveTheDifferentMaskInfoFromCaseNumDayAndSlice(self):
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         maskInSlices=OrgansInSlicesData.RetriveMaskInfo(maskData,123,20,75)
         self.assertEqual(len(maskInSlices.index), 2)
 

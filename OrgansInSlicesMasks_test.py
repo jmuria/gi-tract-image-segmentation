@@ -18,7 +18,7 @@ def ShowMask(maskImage,title):
 
 class TestOrgansInSlicesMasks(unittest.TestCase):
 
-   
+    databasePath='../input/uw-madison-gi-tract-image-segmentation/train.csv'
 
 
 
@@ -26,7 +26,7 @@ class TestOrgansInSlicesMasks(unittest.TestCase):
  
 
     def test_ICanCreateAllTheMasksImageFromACaseDayandSlice(self):
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         maskImage,maskClasses=OrgansInSlicesMasks.CreateMasks(maskData,123,20,75,266,266)
         self.assertEqual(len(maskImage), 4)
         self.assertEqual(len(maskClasses), 2)        
@@ -38,7 +38,7 @@ class TestOrgansInSlicesMasks(unittest.TestCase):
         ShowMask(maskImage[3],"stomach")
   
     def test_ICanCreateAllTheMasksImageFromAnotherCaseDayandSlice(self):
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         maskImage,maskClasses=OrgansInSlicesMasks.CreateMasks(maskData,9,22,73,360,310)
         self.assertEqual(len(maskImage), 4)
         self.assertEqual(len(maskClasses), 3)        
@@ -51,7 +51,7 @@ class TestOrgansInSlicesMasks(unittest.TestCase):
         ShowMask(maskImage[3],"stomach")
 
     def test_ICanCreateACombinedMaskFromACaseDayandSlice(self):
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,9,22,73,360,310)
         self.assertEqual(maskImage.shape, (310,360,1))        
         ShowMask(maskImage,"Combined")
@@ -59,7 +59,7 @@ class TestOrgansInSlicesMasks(unittest.TestCase):
         
 
     def test_ICanExtractDifferentMasksFromACombinedMask(self):
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,9,22,73,360,310)
         self.assertEqual(maskImage.shape, (310,360,1))        
         ShowMask(maskImage,"Combined")
@@ -70,7 +70,7 @@ class TestOrgansInSlicesMasks(unittest.TestCase):
         ShowMask(maskArray[3],"stomach")
 
     def test_ICanCorrectNoSquareMasks(self):
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         maskImages,maskClasses=OrgansInSlicesMasks.CreateMasks(maskData,9,22,73,360,310)
         self.assertEqual(maskImages[0].shape[0], 310)
         self.assertEqual(maskImages[0].shape[1], 360)
@@ -80,7 +80,7 @@ class TestOrgansInSlicesMasks(unittest.TestCase):
         ShowMask(maskImages[1],"large_bowel")
 
     def test_ICanCreateTheRLEFromTheMaskImage(self):
-        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase()
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         maskInSlices=OrgansInSlicesData.RetriveMaskInfo(maskData,9,22,73)
         RLEFromData=maskInSlices['segmentation'].values[0]
         maskImages,maskClasses=OrgansInSlicesMasks.CreateMasks(maskData,9,22,73,360,310)
