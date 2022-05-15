@@ -56,13 +56,13 @@ class OrgansInSlicesFeatures:
             
     
     def CreatePath(self,case,day,slice):
-        SlicePath=self.basePath+'case'+str(case)+'\\case'+str(case)+'_day'+str(day) + '\\scans\\slice_'+str(slice).zfill(4)
+        SlicePath=self.basePath+'case'+str(case)+'/case'+str(case)+'_day'+str(day) + '/scans/slice_'+str(slice).zfill(4)
         SlicesFilenamesList = glob.glob(SlicePath+"*")
         return SlicesFilenamesList[0]
 
     def GetSizesFromPath(slicePath):
         extensionSize=4
-        pathParts=slicePath.split('\\')
+        pathParts=slicePath.split('/')
         filename=pathParts[-1][:-extensionSize]
         imageAttrs=filename.split('_')
         width=int(imageAttrs[2])

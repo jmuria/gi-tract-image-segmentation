@@ -15,6 +15,7 @@ class TestOrgansInSlicesTestData(unittest.TestCase):
      
     basePath='../test/'
     databasePath='../input/uw-madison-gi-tract-image-segmentation/train.csv'
+    resultDatabasePath='../input/uw-madison-gi-tract-image-segmentation/sample_submission.csv'
 
     def test_ICanFindAFileInTheTestFolder(self):
         
@@ -37,7 +38,7 @@ class TestOrgansInSlicesTestData(unittest.TestCase):
 
 
     def test_ICanGetTheIdFromATestFile(self):
-        testFile='..\\test\\case3\\case3_day4\\scans\\slice_0001_266_266_1.50_1.50.png'
+        testFile='../test/case3/case3_day4/scans/slice_0001_266_266_1.50_1.50.png'
         generatedID=OrgansInSlicesTestData.GetFileID(testFile)
         self.assertEqual(generatedID,'case3_day4_slice_0001')
     
@@ -46,10 +47,10 @@ class TestOrgansInSlicesTestData(unittest.TestCase):
         maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,9,22,73,360,310)
 
         testFiles=[]
-        testFiles.append('..\\test\\case3\\case3_day4\\scans\\slice_0001_266_266_1.50_1.50.png')
+        testFiles.append('../test/case3/case3_day4/scans/slice_0001_266_266_1.50_1.50.png')
         maskImages=[]
         maskImages.append(maskImage)
-        resultDatabase=OrgansInSlicesTestData.CreateResultDatabase(testFiles,maskImages,368,368,1.50)
+        resultDatabase=OrgansInSlicesTestData.CreateResultDatabase(self.resultDatabasePath,testFiles,maskImages,368,368,1.50)
         self.assertEqual(len(resultDatabase.index),3)
         self.assertEqual(resultDatabase['id'].values[0],'case3_day4_slice_0001')
         self.assertTrue('stomach' in resultDatabase['class'].values)
@@ -67,12 +68,12 @@ class TestOrgansInSlicesTestData(unittest.TestCase):
         maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,9,22,73,360,310)
 
         testFiles=[]
-        testFiles.append('..\\test\\case3\\case3_day4\\scans\\slice_0001_266_266_1.50_1.50.png')
-        testFiles.append('..\\test\\case4\\case4_day3\\scans\\slice_0001_266_266_1.50_1.50.png')
+        testFiles.append('../test/case3/case3_day4/scans/slice_0001_266_266_1.50_1.50.png')
+        testFiles.append('../test/case4/case4_day3/scans/slice_0001_266_266_1.50_1.50.png')
         maskImages=[]
         maskImages.append(maskImage)
         maskImages.append(maskImage)
-        resultDatabase=OrgansInSlicesTestData.CreateResultDatabase(testFiles,maskImages,368,368,1.50)
+        resultDatabase=OrgansInSlicesTestData.CreateResultDatabase(self.resultDatabasePath,testFiles,maskImages,368,368,1.50)
         self.assertEqual(len(resultDatabase.index),6)        
         self.assertTrue('stomach' in resultDatabase['class'].values)
         self.assertTrue('case3_day4_slice_0001' in resultDatabase['id'].values)

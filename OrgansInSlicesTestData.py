@@ -29,7 +29,7 @@ class OrgansInSlicesTestData:
         return images
 
     def GetFileID(imagePath):
-        parts=imagePath.split('\\')
+        parts=imagePath.split('/')
         caseAndDay=parts[-3]
         caseParts=caseAndDay.split('_')
         case=int(caseParts[0][4:])
@@ -39,9 +39,9 @@ class OrgansInSlicesTestData:
         fileID='case'+str(case)+'_day'+str(day)+'_slice_'+str(slice).zfill(4)
         return fileID
     
-    def CreateResultDatabase(filePaths,maskImages,width,height,pixelSize):
+    def CreateResultDatabase(submissionFilePath,filePaths,maskImages,width,height,pixelSize):
         
-        submission_data = pd.read_csv('../input/uw-madison-gi-tract-image-segmentation/sample_submission.csv')
+        submission_data = pd.read_csv(submissionFilePath)
         submission_data =submission_data[0:0]
         i=0
         for path in filePaths:

@@ -12,19 +12,19 @@ def ShowMask(maskImage,title):
  
 class TestOrgansInSlicesFeatures(unittest.TestCase):
 
-    basePath='..\\input\\uw-madison-gi-tract-image-segmentation\\train\\'
+    basePath='../input/uw-madison-gi-tract-image-segmentation/train/'
     databasePath='../input/uw-madison-gi-tract-image-segmentation/train.csv'
 
 
     def test_ICanGetTheFullPathOfASampleFromData(self):
         features=OrgansInSlicesFeatures(self.basePath)
-        filePath='..\\input\\uw-madison-gi-tract-image-segmentation\\train\\case117\\case117_day13\\scans\\slice_0001_276_276_1.63_1.63.png'
+        filePath='../input/uw-madison-gi-tract-image-segmentation/train/case117/case117_day13/scans/slice_0001_276_276_1.63_1.63.png'
         createdPath=features.CreatePath(117,13,1)
-        self.assertEqual(createdPath, filePath)
+        self.assertEqual(createdPath.replace("\\", "/"), filePath)
 
     def test_ICanGetTheImageAndPixelSizesFromAPath(self):
         
-        filePath='..\\input\\uw-madison-gi-tract-image-segmentation\\train\\case117\\case117_day13\\scans\\slice_0001_276_276_1.63_1.63.png'
+        filePath='../input/uw-madison-gi-tract-image-segmentation/train/case117/case117_day13/scans/slice_0001_276_276_1.63_1.63.png'
         width,height,pixelSize=OrgansInSlicesFeatures.GetSizesFromPath(filePath)
         self.assertEqual(width,276)
         self.assertEqual(height,276)
