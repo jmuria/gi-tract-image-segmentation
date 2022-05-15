@@ -24,14 +24,18 @@ class OrgansInSlicesFeatures:
 
         return image,maskImages
 
-    def CreateSampleImage(self,row):        
-        filePath=self.CreatePath(row['num_case'],row['day'],row['num_slice'])            
+    #def CreateSampleImage(self,row):        
+     #    filePath=self.CreatePath(row['num_case'],row['day'],row['num_slice'])          
+     #   return OrgansInSlicesFeatures.CreateSampleImage(filePath)
+
+    def CreateSampleImage(filePath):
         sampleWidth,sampleHeight,samplePixelSize=OrgansInSlicesFeatures.GetSizesFromPath(filePath)
         image=ScanImage.Create(filePath) 
         return image,sampleWidth,sampleHeight,samplePixelSize
 
-    def PrepareSingleSample(self,row,expectedHeight, expectedWidth,expectedPixelSize):        
-        image,sampleWidth,sampleHeight,samplePixelSize=self.CreateSampleImage(row)
+    def PrepareSingleSample(self,row,expectedHeight, expectedWidth,expectedPixelSize):  
+        filePath=self.CreatePath(row['num_case'],row['day'],row['num_slice'])          
+        image,sampleWidth,sampleHeight,samplePixelSize=OrgansInSlicesFeatures.CreateSampleImage(filePath)
         maskImages,maskClasses=OrgansInSlicesMasks.CreateMasks(self.maskData,row['num_case'],row['day'],row['num_slice'],sampleHeight,sampleWidth)
         image,maskImages=self.HomogenizePixelSize(image,maskImages,samplePixelSize,expectedPixelSize)                
         image,maskImages=self.HomogenizeImageSize(image,maskImages,sampleHeight,expectedHeight,sampleWidth,expectedWidth) 

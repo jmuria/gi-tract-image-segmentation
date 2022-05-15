@@ -12,11 +12,13 @@ class ScanImage:
 
     def ResizeWithoutScaling(image,newWidth,newHeight):
         addedHeight = newHeight-image.shape[0]
-        image = np.concatenate((np.zeros((addedHeight,image.shape[1])),image),axis=0)    
-
-        addedWidth=newWidth-image.shape[1]
-        rightFrame=np.zeros((newHeight,addedWidth))
-        image= np.hstack((image,rightFrame))
+        if(addedHeight>0):
+            image = np.concatenate((np.zeros((addedHeight,image.shape[1])),image),axis=0)    
+            addedWidth=newWidth-image.shape[1]
+            rightFrame=np.zeros((newHeight,addedWidth))
+            image= np.hstack((image,rightFrame))
+        else:
+            image= image[0:newWidth, 0:newHeight]
         
         return image
 

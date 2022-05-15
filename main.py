@@ -1,5 +1,7 @@
 from OrgansInSlicesFeatures import OrgansInSlicesFeatures
 from ConvolutionalNetwork import ConvolutionalNetwork
+from OrgansInSlicesTestData import OrgansInSlicesTestData
+from OrgansInSlicesMasks import OrgansInSlicesMasks
 
 features= OrgansInSlicesFeatures()
 x,y=features.Prepare(100,368,368,1.50)
@@ -15,3 +17,11 @@ convNetwork.PlotModel()
 history=convNetwork.Train(x,y,(368,368),batch_size=5,epochs=50)
        
 ConvolutionalNetwork.PlotHistory(history)
+
+organsTestData=OrgansInSlicesTestData()
+imagePathList=organsTestData.FindFiles()
+testImages=OrgansInSlicesTestData.PrepareImages(imagePathList,368,368,1.50)
+Predictions=convNetwork.Predict(testImages,(368,368))
+
+resultDatabase=OrgansInSlicesTestData.CreateResultDatabase(testImages,Predictions,368,368,1.50)
+resultDatabase.to_csv('../output/submission.csv')  

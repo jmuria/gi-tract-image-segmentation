@@ -28,6 +28,14 @@ class TestScanImage(unittest.TestCase):
         image=ScanImage.ResizeWithoutScaling(image,360,360)
         self.assertEqual(image.shape[0], 360)        
         self.assertEqual(image.shape[1], 360)
+
+     def test_ICanResizeA266x266Into200x200WithoutScaling(self):
+        filePath='..\\input\\uw-madison-gi-tract-image-segmentation\\train\\case101\\case101_day20\\scans\\slice_0001_266_266_1.50_1.50.png'
+        image=ScanImage.Create(filePath) 
+        image=ScanImage.ResizeWithoutScaling(image,200,200)
+        self.assertEqual(image.shape[0], 200)        
+        self.assertEqual(image.shape[1], 200)
+        ShowImage(image,"Reduced")
     
      def test_ICanConvertA1_63mmxPxIntoA1_50mmxPx(self):
         filePath='..\\input\\uw-madison-gi-tract-image-segmentation\\train\\case117\\case117_day13\\scans\\slice_0001_276_276_1.63_1.63.png'
