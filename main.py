@@ -15,18 +15,21 @@ convNetwork=ConvolutionalNetwork()
 model=convNetwork.CreateModel()
 convNetwork.PrepareInput(368,368,1)
 convNetwork.PrepareIntermediateFilters()
-convNetwork.PrepareOutput(368,368,4)
+convNetwork.PrepareOutput(368,368,1)
 convNetwork.CompileModel()
 convNetwork.PlotModel()
 
-history=convNetwork.Train(x,y,(368,368),batch_size=5,epochs=2)
+#history=convNetwork.Train(x,y,(368,368),batch_size=5,epochs=2)
        
-ConvolutionalNetwork.PlotHistory(history)
+#ConvolutionalNetwork.PlotHistory(history)
 
 organsTestData=OrgansInSlicesTestData(testBasePath)
 imagePathList=organsTestData.FindFiles()
-testImages=OrgansInSlicesTestData.PrepareImages(imagePathList,368,368,1.50)
+convertedPaths=[]
+for path in imagePathList:
+    convertedPaths.append(path.replace('\\','/'))
+testImages=OrgansInSlicesTestData.PrepareImages(convertedPaths,368,368,1.50)
 Predictions=convNetwork.Predict(testImages,(368,368))
 
-resultDatabase=OrgansInSlicesTestData.CreateResultDatabase(resultDatabasePath,testImages,Predictions,368,368,1.50)
-resultDatabase.to_csv('../output/submission.csv')  
+resultDatabase=OrgansInSlicesTestData.CreateResultDatabase(resultDatabasePath,convertedPaths,Predictions,368,368,1.50)
+resultDatabase.to_csv('../output/submission.csv',index=False )
