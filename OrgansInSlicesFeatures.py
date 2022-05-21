@@ -2,7 +2,7 @@ import glob
 from OrgansInSlicesData import OrgansInSlicesData
 from OrgansInSlicesMasks import OrgansInSlicesMasks
 from ScanImage import ScanImage
-
+import numpy as np
 
 
 class OrgansInSlicesFeatures:
@@ -52,6 +52,7 @@ class OrgansInSlicesFeatures:
             image,maskImage=self.PrepareSingleSample(row,height, width,pixelSize)            
             x.append(image)            
             y.append(maskImage)
+        y=np.array(y)
         return x,y
             
     

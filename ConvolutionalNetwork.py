@@ -18,12 +18,14 @@ class OrganDataset(tf.keras.utils.Sequence):
                  images,                 
                  masks,                                 
                  target_shape,
-                 batch_size
+                 batch_size,
+                 num_classes=1
                 ):
         self.images = images
         self.masks= masks  
         self.batch_size=batch_size
         self.target_shape=target_shape
+        self.num_classes=num_classes
         
     def __len__(self):
         return len(self.images)
@@ -36,10 +38,10 @@ class OrganDataset(tf.keras.utils.Sequence):
             img = np.expand_dims(img, axis=-1)            
             x[j] = img
         
-        if(self.masks!=None):
+        if(np.any(self.masks!=None)):
             batch_target_img_paths = self.masks[i : i + self.batch_size]
 
-            y = np.zeros((self.batch_size,) +  self.target_shape + (1,), dtype="uint8")
+            y = np.zeros((self.batch_size,) +  self.target_shape + (self.num_classes,), dtype="uint8")
             for j, img in enumerate(batch_target_img_paths):            
                 y[j] = img
       
@@ -117,7 +119,7 @@ class ConvolutionalNetwork:
         self.PreviousLayer=x
 
     def PrepareOutput(self,width,height,nChannels):        
-        self.Output = layers.Conv2D(nChannels, 3, activation="sigmoid", padding="same")(self.PreviousLayer)
+        self.Output = layers.Conv2D(nChannels, (1,1), activation="softmax")(self.PreviousLayer)
         
 
     
@@ -127,19 +129,19 @@ class ConvolutionalNetwork:
         try:
             self.model.compile(
                 optimizer='adam',
-                loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),                
+                #loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),                
                 #optimizer="rmsprop", 
-                #loss="sparse_categorical_crossentropy",
+                loss="categorical_crossentropy",
                 metrics=['accuracy'])
         except BaseException as err:
             print(f"Unexpected {err=}, {type(err)=}")
             raise
 
             
-    def Train(self,X,Y,image_shape,batch_size=1,epochs=10):
+    def Train(self,X,Y,image_shape,batch_size=1,epochs=10,num_classes=4):
         
 
-        data=OrganDataset(X,Y,image_shape,batch_size)
+        data=OrganDataset(X,Y,image_shape,batch_size,num_classes=4)
 
         history=self.model.fit(data, epochs=epochs 
                     #,validation_data=(test_images, test_labels)
