@@ -2,6 +2,7 @@ import unittest
 from  ScanImage import ScanImage
 import matplotlib.pyplot as plt
 import numpy as np
+import os 
 from ConvolutionalNetwork import ConvolutionalNetwork
 from OrgansInSlicesData import OrgansInSlicesData
 from OrgansInSlicesMasks import OrgansInSlicesMasks
@@ -59,6 +60,30 @@ class TestConvolutionalNetwork(unittest.TestCase):
        
         convNetwork.Train([image],[maskImage],(368,368))
       
+     def test_ICanSaveAndRestoreAModel(self):
+        convNetwork=ConvolutionalNetwork()
+        model=convNetwork.CreateModel()
+        self.assertIsNotNone(model)
+        convNetwork.PrepareInput(368,368,1)
+        convNetwork.PrepareIntermediateFilters()
+        convNetwork.PrepareOutput(368,368,4)
+        convNetwork.CompileModel()
+        convNetwork.PlotModel()
+
+        filePath='..\\input\\uw-madison-gi-tract-image-segmentation\\train\\case101\\case101_day20\\scans\\slice_0001_266_266_1.50_1.50.png'
+        image=ScanImage.Create(filePath) 
+        image=ScanImage.ResizeWithoutScaling(image,368,368)
+    
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
+        maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,101,20,1,368,368)
+       
+        modelPath='../output/_ICanSaveAndRestoreAModel.h5'
+        convNetwork.Train([image],[maskImage],(368,368))
+        convNetwork.SaveModel(modelPath)
+        self.assertTrue(os.path.exists(modelPath))
+        new_model = convNetwork.LoadModel(modelPath)
+        self.assertIsNotNone(new_model)
+
 
      def test_ICanTrainTheModelWithMoreThanOneCase(self):
         convNetwork=ConvolutionalNetwork()

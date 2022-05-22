@@ -136,8 +136,14 @@ class ConvolutionalNetwork:
         except BaseException as err:
             print(f"Unexpected {err=}, {type(err)=}")
             raise
+    
+    def SaveModel(self,modelPath):
+        self.model.save(modelPath)
 
-            
+    def LoadModel(self,modelPath):
+        self.model=tf.keras.models.load_model(modelPath)
+        return self.model
+
     def Train(self,X,Y,image_shape,batch_size=1,epochs=10,num_classes=4):
         
 
@@ -150,7 +156,7 @@ class ConvolutionalNetwork:
 
 
     def Predict(self,testImages,image_shape):
-        #data=OrganDataset(testImages,None,image_shape,len(testImages))
+        
         x = np.zeros((len(testImages),) + image_shape , dtype="float32")
         for j, img in enumerate(testImages):            
             x[j] = img
