@@ -28,8 +28,10 @@ class TestOrgansInSlicesTestData(unittest.TestCase):
         
         organsTestData=OrgansInSlicesTestData(self.basePath)
         imagePathList=organsTestData.FindFiles()
-        
-        testImages=OrgansInSlicesTestData.PrepareImages(imagePathList,368,368,1.50)
+        convertedPaths=[]
+        for path in imagePathList:
+            convertedPaths.append(path.replace('\\','/'))
+        testImages=OrgansInSlicesTestData.PrepareImages(convertedPaths,368,368,1.50)
         self.assertEqual(len(testImages),5)
         ShowImage(testImages[0],"Image 0")
         ShowImage(testImages[1],"Image 0")

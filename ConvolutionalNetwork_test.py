@@ -146,7 +146,7 @@ class TestConvolutionalNetwork(unittest.TestCase):
         convNetwork.PlotModel()
 
         features= OrgansInSlicesFeatures(self.basePath)
-        x,y=features.Prepare(self.databasePath, 100,368,368,1.50)
+        x,y=features.Prepare(self.databasePath, 5,368,368,1.50)
         
         
    
@@ -157,7 +157,7 @@ class TestConvolutionalNetwork(unittest.TestCase):
 
 
 
-        history=convNetwork.Train(x,y_train_cat,(368,368),batch_size=2,epochs=25,num_classes=4)
+        history=convNetwork.Train(x,y_train_cat,(368,368),batch_size=2,epochs=2,num_classes=4)
         ConvolutionalNetwork.PlotHistory(history)
         Predictions=convNetwork.Predict(x,(368,368))
         y_pred_argmax=np.argmax(Predictions, axis=3)
