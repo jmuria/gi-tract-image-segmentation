@@ -1,11 +1,12 @@
 from pyexpat import model
 from typing import Any
 import tensorflow as tf
+import tensorflow_addons as tfa
 import sys
 import numpy as np
 from keras import datasets, layers, models,utils
 import matplotlib.pyplot as plt
-
+import keras.backend as K
 
 
 from keras import datasets, layers, models
@@ -64,7 +65,7 @@ class DiceLoss(tf.keras.losses.Loss):
         result = 1 - tf.divide(nominator, denominator)
         return result
 
-import keras.backend as K
+
 
 #pip install focal-loss
 #from focal_loss import BinaryFocalLoss
@@ -168,10 +169,13 @@ class ConvolutionalNetwork:
 
   
     def loss(self):
-        loss=DiceLoss
+        #loss=DiceLoss
         #loss=BinaryFocalLoss(gamma=5)
         #loss="categorical_crossentropy"
         #loss='binary_crossentropy'
+        
+        #loss = tf.keras.losses.BinaryFocalCrossentropy(from_logits=True)
+        loss = tfa.losses.SigmoidFocalCrossEntropy(from_logits=True)
         return loss
 
     
@@ -179,7 +183,8 @@ class ConvolutionalNetwork:
     def optimizer(self):
         from keras.optimizers import SGD
         #optimizer='adam'
-        optimizer = tf.keras.optimizers.RMSprop(learning_rate=0.01)
+        optimizer=tf.keras.optimizers.Adam(0.00075)
+        #optimizer = tf.keras.optimizers.RMSprop(learning_rate=0.01)
         #optimizer = SGD(learning_rate=0.01)
         return optimizer
     

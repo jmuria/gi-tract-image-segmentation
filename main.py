@@ -12,9 +12,9 @@ resultDatabasePath='../input/uw-madison-gi-tract-image-segmentation/sample_submi
 modelPath='../output/mymodel.h5'
 trainModel=True
 numClasses=3
-numSamplesToTrain=100
-numEpocs=2
-0
+numSamplesToTrain=20
+numEpocs=10
+
 
 features= OrgansInSlicesFeatures(trainBasePath)
 x,y=features.Prepare(databasePath,numSamplesToTrain,368,368,1.50)
