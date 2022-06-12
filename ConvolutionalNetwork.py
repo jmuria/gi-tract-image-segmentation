@@ -168,10 +168,10 @@ class ConvolutionalNetwork:
 
   
     def loss(self):
-        #loss=DiceLoss
+        loss=DiceLoss
         #loss=BinaryFocalLoss(gamma=5)
         #loss="categorical_crossentropy"
-        loss='binary_crossentropy'
+        #loss='binary_crossentropy'
         return loss
 
     
@@ -202,10 +202,10 @@ class ConvolutionalNetwork:
         self.model=tf.keras.models.load_model(modelPath)
         return self.model
 
-    def Train(self,X,Y,image_shape,batch_size=1,epochs=10,num_classes=4):
+    def Train(self,X,Y,image_shape,batch_size=1,epochs=10,num_classes=3):
         
 
-        data=OrganDataset(X,Y,image_shape,batch_size,num_classes=4)
+        data=OrganDataset(X,Y,image_shape,batch_size,num_classes=num_classes)
 
         history=self.model.fit(data, epochs=epochs 
                     #,validation_data=(test_images, test_labels)

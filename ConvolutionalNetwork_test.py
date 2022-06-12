@@ -35,7 +35,7 @@ class TestConvolutionalNetwork(unittest.TestCase):
         model=convNetwork.CreateModel()
         self.assertIsNotNone(model)
         convNetwork.PrepareInput(360,360,1)
-        convNetwork.PrepareOutput(360,360,4)
+        convNetwork.PrepareOutput(360,360,3)
         convNetwork.CompileModel()
         convNetwork.PlotModel()
 
@@ -46,7 +46,7 @@ class TestConvolutionalNetwork(unittest.TestCase):
         self.assertIsNotNone(model)
         convNetwork.PrepareInput(368,368,1)
         convNetwork.PrepareIntermediateFilters()
-        convNetwork.PrepareOutput(368,368,4)
+        convNetwork.PrepareOutput(368,368,3)
         convNetwork.CompileModel()
         convNetwork.PlotModel()
 
@@ -66,7 +66,7 @@ class TestConvolutionalNetwork(unittest.TestCase):
         self.assertIsNotNone(model)
         convNetwork.PrepareInput(368,368,1)
         convNetwork.PrepareIntermediateFilters()
-        convNetwork.PrepareOutput(368,368,4)
+        convNetwork.PrepareOutput(368,368,3)
         convNetwork.CompileModel()
         convNetwork.PlotModel()
 
@@ -91,7 +91,7 @@ class TestConvolutionalNetwork(unittest.TestCase):
         self.assertIsNotNone(model)
         convNetwork.PrepareInput(368,368,1)
         convNetwork.PrepareIntermediateFilters()
-        convNetwork.PrepareOutput(368,368,4)
+        convNetwork.PrepareOutput(368,368,3)
         convNetwork.CompileModel()
         convNetwork.PlotModel()
 
@@ -118,7 +118,7 @@ class TestConvolutionalNetwork(unittest.TestCase):
        
         ConvolutionalNetwork.PlotHistory(history)
         
-'''
+     '''
      def test_TheLossFunctionShouldBePerfectForTheSameImage(self):
          maskOrgansImages=[]
          maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
@@ -133,7 +133,7 @@ class TestConvolutionalNetwork(unittest.TestCase):
         
          self.assertEqual(loss.call(y_true=y1,y_pred=y1), 0)
          self.assertNotEqual(loss.call(y_true=y1,y_pred=y2), 0)
-           '''
+     '''
 
      def test_ICanPredictWithATrainedModel(self):
         convNetwork=ConvolutionalNetwork()
@@ -141,7 +141,7 @@ class TestConvolutionalNetwork(unittest.TestCase):
         self.assertIsNotNone(model)
         convNetwork.PrepareInput(368,368,1)
         convNetwork.PrepareIntermediateFilters()
-        convNetwork.PrepareOutput(368,368,4)
+        convNetwork.PrepareOutput(368,368,3)
         convNetwork.CompileModel()
         convNetwork.PlotModel()
 
@@ -152,33 +152,32 @@ class TestConvolutionalNetwork(unittest.TestCase):
    
         from tensorflow.keras.utils import to_categorical
         numpy_y=np.array(y)
-        train_masks_cat = to_categorical(numpy_y, num_classes=4)
-        y_train_cat = train_masks_cat.reshape((numpy_y.shape[0], numpy_y.shape[1], numpy_y.shape[2], 4))
+        train_masks_cat = to_categorical(numpy_y, num_classes=3)
+        y_train_cat = train_masks_cat.reshape((numpy_y.shape[0], numpy_y.shape[1], numpy_y.shape[2], 3))
 
 
 
-        history=convNetwork.Train(x,y_train_cat,(368,368),batch_size=2,epochs=2,num_classes=4)
+        history=convNetwork.Train(x,y_train_cat,(368,368),batch_size=2,epochs=2,num_classes=3)
         ConvolutionalNetwork.PlotHistory(history)
         Predictions=convNetwork.Predict(x,(368,368))
         y_pred_argmax=np.argmax(Predictions, axis=3)
 
 
         from keras.metrics import MeanIoU
-        n_classes = 4
+        n_classes = 3
         IOU_keras = MeanIoU(num_classes=n_classes)  
         IOU_keras.update_state(numpy_y[:,:,:,0], y_pred_argmax)
         print("Mean IoU =", IOU_keras.result().numpy())
 
         values = np.array(IOU_keras.get_weights()).reshape(n_classes, n_classes)
         print(values)
-        class1_IoU = values[0,0]/(values[0,0] + values[0,1] + values[0,2] + values[0,3] + values[1,0]+ values[2,0]+ values[3,0])
-        class2_IoU = values[1,1]/(values[1,1] + values[1,0] + values[1,2] + values[1,3] + values[0,1]+ values[2,1]+ values[3,1])
-        class3_IoU = values[2,2]/(values[2,2] + values[2,0] + values[2,1] + values[2,3] + values[0,2]+ values[1,2]+ values[3,2])
-        class4_IoU = values[3,3]/(values[3,3] + values[3,0] + values[3,1] + values[3,2] + values[0,3]+ values[1,3]+ values[2,3])
+        class1_IoU = values[0,0]/(values[0,0] + values[0,1] + values[0,2] + values[1,0]+ values[2,0])
+        class2_IoU = values[1,1]/(values[1,1] + values[1,0] + values[1,2] + values[0,1]+ values[2,1])
+        class3_IoU = values[2,2]/(values[2,2] + values[2,0] + values[2,1] +  values[0,2]+ values[1,2])
+        
         print("IoU for class1 is: ", class1_IoU)
         print("IoU for class2 is: ", class2_IoU)
-        print("IoU for class3 is: ", class3_IoU)
-        print("IoU for class4 is: ", class4_IoU)
+        print("IoU for class3 is: ", class3_IoU)        
 
         #preds_test_thresh = Predictions.astype(np.uint8)
         # Display a thresholded mask

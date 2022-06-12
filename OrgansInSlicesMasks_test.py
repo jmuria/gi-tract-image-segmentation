@@ -28,27 +28,25 @@ class TestOrgansInSlicesMasks(unittest.TestCase):
     def test_ICanCreateAllTheMasksImageFromACaseDayandSlice(self):
         maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         maskImage,maskClasses=OrgansInSlicesMasks.CreateMasks(maskData,123,20,75,266,266)
-        self.assertEqual(len(maskImage), 4)
+        self.assertEqual(len(maskImage), 3)
         self.assertEqual(len(maskClasses), 2)        
         self.assertEqual(maskClasses[0], "large_bowel")
-        self.assertEqual(maskClasses[1], "stomach")        
-        ShowMask(maskImage[0],"Background")
-        ShowMask(maskImage[1],"large_bowel")
-        ShowMask(maskImage[2],"small_bowel")
-        ShowMask(maskImage[3],"stomach")
+        self.assertEqual(maskClasses[1], "stomach")                
+        ShowMask(maskImage[0],"large_bowel")
+        ShowMask(maskImage[1],"small_bowel")
+        ShowMask(maskImage[2],"stomach")
   
     def test_ICanCreateAllTheMasksImageFromAnotherCaseDayandSlice(self):
         maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         maskImage,maskClasses=OrgansInSlicesMasks.CreateMasks(maskData,9,22,73,360,310)
-        self.assertEqual(len(maskImage), 4)
+        self.assertEqual(len(maskImage), 3)
         self.assertEqual(len(maskClasses), 3)        
         self.assertEqual(maskClasses[0], "large_bowel")
         self.assertEqual(maskClasses[1], "small_bowel")
-        self.assertEqual(maskClasses[2], "stomach")        
-        ShowMask(maskImage[0],"Background")
-        ShowMask(maskImage[1],"large_bowel")
-        ShowMask(maskImage[2],"small_bowel")
-        ShowMask(maskImage[3],"stomach")
+        self.assertEqual(maskClasses[2], "stomach")                
+        ShowMask(maskImage[0],"large_bowel")
+        ShowMask(maskImage[1],"small_bowel")
+        ShowMask(maskImage[2],"stomach")
 
     def test_ICanCreateACombinedMaskFromACaseDayandSlice(self):
         maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
@@ -63,11 +61,10 @@ class TestOrgansInSlicesMasks(unittest.TestCase):
         maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,9,22,73,360,310)
         self.assertEqual(maskImage.shape, (310,360,1))        
         ShowMask(maskImage,"Combined")
-        maskArray=OrgansInSlicesMasks.ExtractMasks(maskImage,310,360)
-        ShowMask(maskArray[0],"Background")
-        ShowMask(maskArray[1],"large_bowel")
-        ShowMask(maskArray[2],"small_bowel")
-        ShowMask(maskArray[3],"stomach")
+        maskArray=OrgansInSlicesMasks.ExtractMasks(maskImage,310,360)        
+        ShowMask(maskArray[0],"large_bowel")
+        ShowMask(maskArray[1],"small_bowel")
+        ShowMask(maskArray[2],"stomach")
 
     def test_ICanCorrectNoSquareMasks(self):
         maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
@@ -84,8 +81,8 @@ class TestOrgansInSlicesMasks(unittest.TestCase):
         maskInSlices=OrgansInSlicesData.RetriveMaskInfo(maskData,9,22,73)
         RLEFromData=maskInSlices['segmentation'].values[0]
         maskImages,maskClasses=OrgansInSlicesMasks.CreateMasks(maskData,9,22,73,360,310)
-        OrgansInSlicesMasks.ShowMask(maskImages[1],"Mask0")
-        createdRLE=OrgansInSlicesMasks.CreateRLEFromImage(maskImages[1])        
+        OrgansInSlicesMasks.ShowMask(maskImages[0],"Mask0")
+        createdRLE=OrgansInSlicesMasks.CreateRLEFromImage(maskImages[0])        
         self.assertEqual(createdRLE, RLEFromData)
 
 if __name__ == '__main__':

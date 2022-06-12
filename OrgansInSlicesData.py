@@ -7,9 +7,9 @@ class OrgansInSlicesData:
 
 
     organ_type_mapping = {
-        'large_bowel': 1,
-        'small_bowel': 2,
-        'stomach': 3
+        'large_bowel': 0,
+        'small_bowel': 1,
+        'stomach': 2
         }
 
     def PrepareImageDataFromDatabase(databasePath):

@@ -11,14 +11,18 @@ testBasePath='../test/'
 resultDatabasePath='../input/uw-madison-gi-tract-image-segmentation/sample_submission.csv'
 modelPath='../output/mymodel.h5'
 trainModel=True
+numClasses=3
+numSamplesToTrain=100
+numEpocs=2
+0
 
 features= OrgansInSlicesFeatures(trainBasePath)
-x,y=features.Prepare(databasePath,100,368,368,1.50)
+x,y=features.Prepare(databasePath,numSamplesToTrain,368,368,1.50)
 
 
 
-train_masks_cat = to_categorical(y, num_classes=4)
-y_train_cat = train_masks_cat.reshape((y.shape[0], y.shape[1], y.shape[2], 4))
+train_masks_cat = to_categorical(y, num_classes=numClasses)
+y_train_cat = train_masks_cat.reshape((y.shape[0], y.shape[1], y.shape[2], numClasses))
 
 from sklearn.model_selection import train_test_split
 X1, X_test, y1, y_test = train_test_split(x, y_train_cat, test_size = 0.90, random_state = 0)
@@ -31,13 +35,13 @@ model=convNetwork.CreateModel()
 if(trainModel):
     convNetwork.PrepareInput(368,368,1)
     convNetwork.PrepareIntermediateFilters()
-    convNetwork.PrepareOutput(368,368,4)
+    convNetwork.PrepareOutput(368,368,numClasses)
     convNetwork.CompileModel()
     convNetwork.PlotModel()
 
 
 
-    history=convNetwork.Train(x,y_train_cat,(368,368),batch_size=5,epochs=10,num_classes=4)
+    history=convNetwork.Train(x,y_train_cat,(368,368),batch_size=5,epochs=numEpocs,num_classes=numClasses)
         
     ConvolutionalNetwork.PlotHistory(history)
     convNetwork.SaveModel(modelPath)
@@ -66,21 +70,20 @@ y_pred_argmax=np.argmax(Predictions, axis=3)
 
 
 from keras.metrics import MeanIoU
-n_classes = 4
-IOU_keras = MeanIoU(num_classes=n_classes)  
+IOU_keras = MeanIoU(num_classes=numClasses)  
 IOU_keras.update_state(y_test[:,:,:,0], y_pred_argmax)
 print("Mean IoU =", IOU_keras.result().numpy())
 
-values = np.array(IOU_keras.get_weights()).reshape(n_classes, n_classes)
+values = np.array(IOU_keras.get_weights()).reshape(numClasses, numClasses)
 print(values)
-class1_IoU = values[0,0]/(values[0,0] + values[0,1] + values[0,2] + values[0,3] + values[1,0]+ values[2,0]+ values[3,0])
-class2_IoU = values[1,1]/(values[1,1] + values[1,0] + values[1,2] + values[1,3] + values[0,1]+ values[2,1]+ values[3,1])
-class3_IoU = values[2,2]/(values[2,2] + values[2,0] + values[2,1] + values[2,3] + values[0,2]+ values[1,2]+ values[3,2])
-class4_IoU = values[3,3]/(values[3,3] + values[3,0] + values[3,1] + values[3,2] + values[0,3]+ values[1,3]+ values[2,3])
+class1_IoU = values[0,0]/(values[0,0] + values[0,1] + values[0,2] +  values[1,0]+ values[2,0])
+class2_IoU = values[1,1]/(values[1,1] + values[1,0] + values[1,2] +  values[0,1]+ values[2,1])
+class3_IoU = values[2,2]/(values[2,2] + values[2,0] + values[2,1] +  values[0,2]+ values[1,2])
+
 print("IoU for class1 is: ", class1_IoU)
 print("IoU for class2 is: ", class2_IoU)
 print("IoU for class3 is: ", class3_IoU)
-print("IoU for class4 is: ", class4_IoU)
+
 
 y_test=np.argmax(y_test, axis=3)
 OrgansInSlicesMasks.ShowMask(X_test[0],"Sclice 1")

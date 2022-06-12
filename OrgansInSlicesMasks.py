@@ -70,10 +70,7 @@ class OrgansInSlicesMasks:
         maskImage=[]
         maskInSlices=OrgansInSlicesData.RetriveMaskInfo(maskData,numCase,day,numSlice)
         maskClasses=maskInSlices['class'].values
-        #for index, row in maskInSlices.iterrows():
-        #     maskImage.append(OrgansInSlicesMasks.CreateMask(row,width,height))
-
-        maskImage.append(OrgansInSlicesMasks.CreateEmptyMask(width,height)) #Background
+     
         for organType in OrgansInSlicesData.organ_type_mapping:
             organIndex=maskInSlices.index[maskInSlices['class'] == organType].tolist()
             if( len(organIndex)>0):
@@ -92,17 +89,17 @@ class OrgansInSlicesMasks:
         combinedMaskImage = np.zeros((height,width) + (1,), dtype="uint8")
         increase=255/len(maskImages)
         for organIndex in range(len(OrgansInSlicesData.organ_type_mapping)):            
-            combinedMaskImage = combinedMaskImage + np.expand_dims(maskImages[organIndex+1]*(organIndex+1), axis=2)
-            combinedMaskImage[combinedMaskImage>organIndex+1]=organIndex+1  
+            combinedMaskImage = combinedMaskImage + np.expand_dims(maskImages[organIndex]*(organIndex), axis=2)
+            combinedMaskImage[combinedMaskImage>organIndex]=organIndex  
                 
         return  combinedMaskImage
     
     def ExtractMasks(maskImage,height,width):
         imageArray=[]        
-        imageArray.append(OrgansInSlicesMasks.CreateEmptyMask( width,height))
+      
         for organIndex in range(len(OrgansInSlicesData.organ_type_mapping)):
             mask = OrgansInSlicesMasks.CreateEmptyMask( width,height)
-            mask[np.squeeze(maskImage==organIndex+1)]=1
+            mask[np.squeeze(maskImage==organIndex)]=1
             imageArray.append(mask)
         return imageArray
 
