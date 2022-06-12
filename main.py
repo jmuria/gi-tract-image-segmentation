@@ -1,5 +1,5 @@
 from OrgansInSlicesFeatures import OrgansInSlicesFeatures
-from ConvolutionalNetwork import ConvolutionalNetwork
+from ConvNetwork2 import ConvNetwork2
 from OrgansInSlicesTestData import OrgansInSlicesTestData
 from OrgansInSlicesMasks import OrgansInSlicesMasks
 import numpy as np
@@ -10,10 +10,10 @@ databasePath='../input/uw-madison-gi-tract-image-segmentation/train.csv'
 testBasePath='../test/'
 resultDatabasePath='../input/uw-madison-gi-tract-image-segmentation/sample_submission.csv'
 modelPath='../output/mymodel.h5'
-trainModel=True
+trainModel=False
 numClasses=3
-numSamplesToTrain=20
-numEpocs=10
+numSamplesToTrain=100
+numEpocs=30
 
 
 features= OrgansInSlicesFeatures(trainBasePath)
@@ -27,13 +27,13 @@ y_train_cat = train_masks_cat.reshape((y.shape[0], y.shape[1], y.shape[2], numCl
 from sklearn.model_selection import train_test_split
 X1, X_test, y1, y_test = train_test_split(x, y_train_cat, test_size = 0.90, random_state = 0)
 
-convNetwork=ConvolutionalNetwork()
+convNetwork=ConvNetwork2()
 
 
 model=convNetwork.CreateModel()
 
 if(trainModel):
-    convNetwork.PrepareInput(368,368,1)
+    convNetwork.PrepareInput(368,368,3)
     convNetwork.PrepareIntermediateFilters()
     convNetwork.PrepareOutput(368,368,numClasses)
     convNetwork.CompileModel()
@@ -41,9 +41,9 @@ if(trainModel):
 
 
 
-    history=convNetwork.Train(x,y_train_cat,(368,368),batch_size=5,epochs=numEpocs,num_classes=numClasses)
+    history=convNetwork.Train(x,y_train_cat,(368,368),batch_size=2,epochs=numEpocs,num_classes=numClasses)
         
-    ConvolutionalNetwork.PlotHistory(history)
+    ConvNetwork2.PlotHistory(history)
     convNetwork.SaveModel(modelPath)
 else:
     convNetwork.LoadModel(modelPath)
@@ -88,10 +88,10 @@ print("IoU for class3 is: ", class3_IoU)
 y_test=np.argmax(y_test, axis=3)
 OrgansInSlicesMasks.ShowMask(X_test[0],"Sclice 1")
 OrgansInSlicesMasks.ShowMask(y_pred_argmax[0],"Prediction 1")
-OrgansInSlicesMasks.ShowMask(y[0],"Mask 1")
+OrgansInSlicesMasks.ShowMask(y_test[0],"Mask 1")
 OrgansInSlicesMasks.ShowMask(X_test[1],"Sclice 2")
 OrgansInSlicesMasks.ShowMask(y_pred_argmax[1],"Prediction 2")
-OrgansInSlicesMasks.ShowMask(y[1],"Mask2")
+OrgansInSlicesMasks.ShowMask(y_test[1],"Mask2")
 
 #resultDatabase=OrgansInSlicesTestData.CreateResultDatabase(resultDatabasePath,convertedPaths,y_pred_argmax,368,368,1.50)
 #resultDatabase.to_csv('../output/submission.csv',index=False )

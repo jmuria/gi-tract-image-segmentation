@@ -73,7 +73,8 @@ class ConvNetwork2_test(unittest.TestCase):
         
         
    
-        from tensorflow.keras.utils import to_categorical
+        from tensorflow.keras.utils
+        import to_categorical
         numpy_y=np.array(y)
         train_masks_cat = to_categorical(numpy_y, num_classes=3)
         y_train_cat = train_masks_cat.reshape((numpy_y.shape[0], numpy_y.shape[1], numpy_y.shape[2], 3))
