@@ -10,7 +10,7 @@ databasePath='../input/uw-madison-gi-tract-image-segmentation/train.csv'
 testBasePath='../test/'
 resultDatabasePath='../input/uw-madison-gi-tract-image-segmentation/sample_submission.csv'
 modelPath='../output/mymodel.h5'
-trainModel=False
+trainModel=True
 
 features= OrgansInSlicesFeatures(trainBasePath)
 x,y=features.Prepare(databasePath,100,368,368,1.50)
@@ -37,7 +37,7 @@ if(trainModel):
 
 
 
-    history=convNetwork.Train(x,y_train_cat,(368,368),batch_size=5,epochs=30,num_classes=4)
+    history=convNetwork.Train(x,y_train_cat,(368,368),batch_size=5,epochs=10,num_classes=4)
         
     ConvolutionalNetwork.PlotHistory(history)
     convNetwork.SaveModel(modelPath)

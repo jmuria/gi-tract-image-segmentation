@@ -41,7 +41,7 @@ class OrganDataset(tf.keras.utils.Sequence):
         if(np.any(self.masks!=None)):
             batch_target_img_paths = self.masks[i : i + self.batch_size]
 
-            y = np.zeros((self.batch_size,) +  self.target_shape + (self.num_classes,), dtype="uint8")
+            y = np.zeros((self.batch_size,) +  self.target_shape + (self.num_classes,), dtype="float32")
             for j, img in enumerate(batch_target_img_paths):            
                 y[j] = img
       
@@ -64,6 +64,26 @@ class DiceLoss(tf.keras.losses.Loss):
         result = 1 - tf.divide(nominator, denominator)
         return result
 
+import keras.backend as K
+
+#pip install focal-loss
+#from focal_loss import BinaryFocalLoss
+#loss=BinaryFocalLoss(gamma=2)
+#segmentation-models
+#CategoricalFocalLoss
+
+def DiceLoss(y_true, y_pred, smooth=1):
+    """
+    Dice = (2*|X & Y|)/ (|X|+ |Y|)
+         =  2*sum(|A*B|)/(sum(A^2)+sum(B^2))
+    ref: https://arxiv.org/pdf/1606.04797v1.pdf
+    """
+    
+    intersection = K.sum(K.abs(y_true * y_pred), axis=-1)
+    return 1-(2. * intersection + smooth) / (K.sum(K.square(y_true),-1) + K.sum(K.square(y_pred),-1) + smooth)
+ 
+from focal_loss import BinaryFocalLoss
+
 class ConvolutionalNetwork:
     model = Any
 
@@ -73,65 +93,103 @@ class ConvolutionalNetwork:
     
     def PrepareInput(self,width,height,nChannels):        
         self.Input= layers.Input(shape=(width,height,nChannels))
-        self.PreviousLayer = layers.Conv2D(32, 3, strides=2, padding="same")(self.Input)
+        #self.Input = layers.Lambda(lambda x: x / 255)( self.Input)
+        #self.PreviousLayer = layers.Conv2D(32, 3, strides=2, padding="same")(self.Input)
+        self.PreviousLayer = self.Input
     
+
     def PrepareIntermediateFilters(self):
-        x = self.PreviousLayer
-        previous_block_activation = x  # Set aside residual
-        # Blocks 1, 2, 3 are identical apart from the feature depth.
-        for filters in [64, 128, 256]:
-            x = layers.Activation("relu")(x)
-            x = layers.SeparableConv2D(filters, 3, padding="same")(x)
-            x = layers.BatchNormalization()(x)
+            
+        #Contraction path
+        
+        c1 = layers.Conv2D(16, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c1")(self.PreviousLayer)
+        c1 = layers.Dropout(0.1)(c1)        
+        c1 = layers.Conv2D(16, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c12")(c1)
+        p1 = layers.MaxPooling2D((2, 2))(c1)
 
-            x = layers.Activation("relu")(x)
-            x = layers.SeparableConv2D(filters, 3, padding="same")(x)
-            x = layers.BatchNormalization()(x)
+        
+        c2 = layers.Conv2D(32, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c2")(p1)
+        c2 = layers.Dropout(0.1)(c2)        
+        c2 = layers.Conv2D(32, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c22")(c2)
+        p2 = layers.MaxPooling2D((2, 2))(c2)
+        
+        c3 = layers.Conv2D(64, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c3")(p2)
+        c3 = layers.Dropout(0.2)(c3)        
+        c3 = layers.Conv2D(64, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c32")(c3)
+        p3 = layers.MaxPooling2D((2, 2))(c3)
 
-            x = layers.MaxPooling2D(3, strides=2, padding="same")(x)
+        
+        c4 = layers.Conv2D(128, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c4")(p3)
+        c4 = layers.Dropout(0.2)(c4)        
+        c4 = layers.Conv2D(128, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c42")(c4)
+        p4 = layers.MaxPooling2D((2, 2))(c4)
+        
 
-            # Project residual
-            residual = layers.Conv2D(filters, 1, strides=2, padding="same")(
-                previous_block_activation
-            )
-            x = layers.add([x, residual])  # Add back residual
-            previous_block_activation = x  # Set aside next residual
+        c5 = layers.Conv2D(256, (3, 3), kernel_initializer='he_normal', padding="same",name="cc5")(p4)
+        c5 = layers.Dropout(0.3)(c5)
+        c5 = layers.Conv2D(256, (3, 3), kernel_initializer='he_normal', padding="same",name="c52")(c5)
+        
+    
+        #Expansive path 
+        u6 = layers.Conv2DTranspose(128, (2, 2),strides=(2, 2), padding="same",name="u6")(c5)
+        u6 = layers.concatenate([u6, c4])        
+        c6 = layers.Conv2D(128, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c6")(u6)
+        c6 = layers.Dropout(0.2)(c6)
+        c6 = layers.Conv2D(128, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c62")(c6)
 
-        ### [Second half of the network: upsampling inputs] ###
+        u7 = layers.Conv2DTranspose(64, (2, 2),strides=(2, 2), padding="same",name="u7")(c6)
+        u7 = layers.concatenate([u7, c3])        
+        c7 = layers.Conv2D(64, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c7")(u7)
+        c7 = layers.Dropout(0.2)(c7)
+        c7 = layers.Conv2D(64, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c72")(c7)
 
-        for filters in [256, 128, 64, 32]:
-            x = layers.Activation("relu")(x)
-            x = layers.Conv2DTranspose(filters, 3, padding="same")(x)
-            x = layers.BatchNormalization()(x)
+        u8 = layers.Conv2DTranspose(32, (2, 2),strides=(2, 2), padding="same",name="u8")(c7)
+        u8 = layers.concatenate([u8, c2])        
+        c8 = layers.Conv2D(32, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c8")(u8)
+        c8 = layers.Dropout(0.1)(c8)
+        c8 = layers.Conv2D(32, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c82")(c8)
 
-            x = layers.Activation("relu")(x)
-            x = layers.Conv2DTranspose(filters, 3, padding="same")(x)
-            x = layers.BatchNormalization()(x)
+        u9 = layers.Conv2DTranspose(16, (2, 2),strides=(2, 2), padding="same",name="u9")(c8)
+        u9 = layers.concatenate([u9, c1], axis=3)        
+        c9 = layers.Conv2D(16, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c9")(u9)
+        c9 = layers.Dropout(0.1)(c9)
+        c9 = layers.Conv2D(16, (3, 3),activation='relu', kernel_initializer='he_normal', padding="same",name="c92")(c9)
+        self.PreviousLayer=c9
+    
 
-            x = layers.UpSampling2D(2)(x)
 
-            # Project residual
-            residual = layers.UpSampling2D(2)(previous_block_activation)
-            residual = layers.Conv2D(filters, 1, padding="same")(residual)
-            x = layers.add([x, residual])  # Add back residual
-            previous_block_activation = x  # Set aside next residual
+     
 
-        self.PreviousLayer=x
+    
 
     def PrepareOutput(self,width,height,nChannels):        
         self.Output = layers.Conv2D(nChannels, (1,1), activation="softmax")(self.PreviousLayer)
-        
+         
 
+  
+    def loss(self):
+        #loss=DiceLoss
+        #loss=BinaryFocalLoss(gamma=5)
+        #loss="categorical_crossentropy"
+        loss='binary_crossentropy'
+        return loss
+
+    
+    
+    def optimizer(self):
+        from keras.optimizers import SGD
+        #optimizer='adam'
+        optimizer = tf.keras.optimizers.RMSprop(learning_rate=0.01)
+        #optimizer = SGD(learning_rate=0.01)
+        return optimizer
     
     def CompileModel(self):
         self.model = tf.keras.Model(self.Input, self.Output, name="U-Net")
         
         try:
             self.model.compile(
-                optimizer='adam',
-                #loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),                
-                #optimizer="rmsprop", 
-                loss="categorical_crossentropy",
+                optimizer=self.optimizer(),
+                loss=self.loss(),                
                 metrics=['accuracy'])
         except BaseException as err:
             print(f"Unexpected {err=}, {type(err)=}")
