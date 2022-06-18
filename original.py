@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 from skimage import color
-from glob import glob
+import glob
 from OrgansInSlicesData import OrgansInSlicesData
 from OrgansInSlicesMasks import OrgansInSlicesMasks
 from ScanImage import ScanImage

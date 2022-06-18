@@ -1,4 +1,4 @@
-from glob import glob
+import glob
 import pandas as pd
 from OrgansInSlicesFeatures import OrgansInSlicesFeatures
 from ScanImage import ScanImage
@@ -13,7 +13,7 @@ class OrgansInSlicesTestData:
     
     def FindFiles(self):
         fullPath=self.basePath+'*/*/scans/*.png'
-        return  glob(fullPath)
+        return  glob.glob(fullPath)
 
     def PrepareImages(filePaths,expectedWidth,expectedHeight,expectedPixelSize):
         images=[]

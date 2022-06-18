@@ -90,7 +90,7 @@ class OrgansInSlicesMasks:
         increase=255/len(maskImages)
         for organIndex in range(len(OrgansInSlicesData.organ_type_mapping)):            
             combinedMaskImage = combinedMaskImage + np.expand_dims(maskImages[organIndex]*(organIndex), axis=2)
-            combinedMaskImage[combinedMaskImage>organIndex]=organIndex  
+            combinedMaskImage[combinedMaskImage>organIndex]=organIndex+1  
                 
         return  combinedMaskImage
     
@@ -99,7 +99,7 @@ class OrgansInSlicesMasks:
       
         for organIndex in range(len(OrgansInSlicesData.organ_type_mapping)):
             mask = OrgansInSlicesMasks.CreateEmptyMask( width,height)
-            mask[np.squeeze(maskImage==organIndex)]=1
+            mask[np.squeeze(maskImage==(organIndex+1))]=1
             imageArray.append(mask)
         return imageArray
 

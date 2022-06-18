@@ -27,7 +27,8 @@ class OrganDataset2(tf.keras.utils.Sequence):
         for j, img in enumerate(batch_input_img_paths):
             #img = np.expand_dims(img, axis=-1)
             img_float32 = np.float32(img)
-            img = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)            
+            img = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)  
+            img = 255.*(img/tf.reduce_max(img))    
             #img=cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)            
             x[j] = img
         
@@ -165,7 +166,8 @@ class ConvNetwork2(ConvolutionalNetwork):
         x = np.zeros((len(testImages),) + image_shape + (3,) , dtype="float32")
         for j, img in enumerate(testImages):    
             img_float32 = np.float32(img)            
-            img = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)            
+            img = cv2.cvtColor(img_float32, cv2.COLOR_GRAY2RGB)    
+            img = 255.*(img/tf.reduce_max(img))
             x[j] = img
         val_preds = self.model.predict(x)
         return val_preds
