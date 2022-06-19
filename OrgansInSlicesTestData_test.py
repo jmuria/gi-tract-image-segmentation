@@ -44,6 +44,14 @@ class TestOrgansInSlicesTestData(unittest.TestCase):
         generatedID=OrgansInSlicesTestData.GetFileID(testFile)
         self.assertEqual(generatedID,'case3_day4_slice_0001')
     
+
+    def test_ICanCreateAnEmptyDatabase(self):
+        testFiles=[]
+        testFiles.append('../test/case3/case3_day4/scans/slice_0001_266_266_1.50_1.50.png')
+        resultDatabase=OrgansInSlicesTestData.CreateEmptyDatabase(self.resultDatabasePath,testFiles)
+        self.assertEqual(len(resultDatabase.index),3)
+        
+
     def test_ICanCreateTheDatabaseLinesWithATestFileAndTheMasks(self):
         maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
         maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,9,22,73,360,310)
@@ -52,7 +60,8 @@ class TestOrgansInSlicesTestData(unittest.TestCase):
         testFiles.append('../test/case3/case3_day4/scans/slice_0001_266_266_1.50_1.50.png')
         maskImages=[]
         maskImages.append(maskImage)
-        resultDatabase=OrgansInSlicesTestData.CreateResultDatabase(self.resultDatabasePath,testFiles,maskImages,368,368,1.50)
+        resultDatabase=OrgansInSlicesTestData.CreateEmptyDatabase(self.resultDatabasePath,testFiles)
+        resultDatabase=OrgansInSlicesTestData.UpdateResultDatabase(resultDatabase,testFiles[0],maskImages[0],368,368,1.50)
         self.assertEqual(len(resultDatabase.index),3)
         self.assertEqual(resultDatabase['id'].values[0],'case3_day4_slice_0001')
         self.assertTrue('stomach' in resultDatabase['class'].values)
@@ -75,7 +84,9 @@ class TestOrgansInSlicesTestData(unittest.TestCase):
         maskImages=[]
         maskImages.append(maskImage)
         maskImages.append(maskImage)
-        resultDatabase=OrgansInSlicesTestData.CreateResultDatabase(self.resultDatabasePath,testFiles,maskImages,368,368,1.50)
+        resultDatabase=OrgansInSlicesTestData.CreateEmptyDatabase(self.resultDatabasePath,testFiles)
+        resultDatabase=OrgansInSlicesTestData.UpdateResultDatabase(resultDatabase,testFiles[0],maskImages[0],368,368,1.50)
+        resultDatabase=OrgansInSlicesTestData.UpdateResultDatabase(resultDatabase,testFiles[1],maskImages[1],368,368,1.50)
         self.assertEqual(len(resultDatabase.index),6)        
         self.assertTrue('stomach' in resultDatabase['class'].values)
         self.assertTrue('case3_day4_slice_0001' in resultDatabase['id'].values)
@@ -87,3 +98,18 @@ class TestOrgansInSlicesTestData(unittest.TestCase):
         self.assertTrue('small_bowel' in resultDatabase['class'].values)
         self.assertGreater(len(resultDatabase['predicted'].values[2]),0)
         self.assertTrue('case4_day3_slice_0001' in resultDatabase['id'].values)
+
+    def test_ICanSaveTheDatabas(self):
+        outputDatabasePath='../output/submissionTest.csv'
+        testFiles=[]
+        testFiles.append('../test/case3/case3_day4/scans/slice_0001_266_266_1.50_1.50.png')
+        testFiles.append('../test/case4/case4_day3/scans/slice_0001_266_266_1.50_1.50.png')
+        resultDatabase=OrgansInSlicesTestData.CreateEmptyDatabase(self.resultDatabasePath,testFiles)
+        self.assertEqual(len(resultDatabase.index),6)     
+        OrgansInSlicesTestData.SaveDatabase(resultDatabase,outputDatabasePath)
+        from os.path import exists
+
+        self.assertTrue(exists(outputDatabasePath))
+
+
+        

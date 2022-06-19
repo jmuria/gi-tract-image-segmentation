@@ -87,6 +87,7 @@ from focal_loss import BinaryFocalLoss
 
 class ConvolutionalNetwork:
     model = Any
+    _earlyStop = None
 
     def CreateModel(self):
         self.model = models.Sequential()
@@ -207,14 +208,21 @@ class ConvolutionalNetwork:
         self.model=tf.keras.models.load_model(modelPath)
         return self.model
 
+
+    def PrepareCallbacks(self):
+        callbacks=None
+        if(self._earlyStop is not None):
+            callbacks=[self._earlyStop]
+        return callbacks
+
+    def PrepareData(self,X,Y,image_shape,batch_size,num_classes):
+        return OrganDataset(X,Y,image_shape,batch_size,num_classes=num_classes)
+
     def Train(self,X,Y,image_shape,batch_size=1,epochs=10,num_classes=3):
         
-
-        data=OrganDataset(X,Y,image_shape,batch_size,num_classes=num_classes)
-
-        history=self.model.fit(data, epochs=epochs 
-                    #,validation_data=(test_images, test_labels)
-                     )
+        data=self.PrepareData(X,Y,image_shape,batch_size,num_classes=num_classes)
+        
+        history=self.model.fit(data, epochs=epochs,callbacks=self.PrepareCallbacks())
         return history
 
 
@@ -225,6 +233,12 @@ class ConvolutionalNetwork:
             x[j] = img
         val_preds = self.model.predict(x)
         return val_preds
+
+    def SetEarlyStop(self,patiente):
+        self._earlyStop = tf.keras.callbacks.EarlyStopping(monitor="loss",  patience=patiente, 
+                                              verbose=1, mode="min",
+                                              restore_best_weights=True)
+
 
     def PlotModel(self):
         tf.keras.utils.plot_model(self.model,to_file='../output/Model_Diagram.png',show_shapes=True, show_layer_names=True, expand_nested=True)

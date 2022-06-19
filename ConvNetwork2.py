@@ -151,15 +151,18 @@ class ConvNetwork2(ConvolutionalNetwork):
                                         high_feat_layer=self.RES_HIGH_FEAT_LAYER, 
                                         n_classes=self.classes)
     
+    def PrepareData(self,X,Y,image_shape,batch_size,num_classes):
+        return OrganDataset2(X,Y,image_shape,batch_size,num_classes=num_classes)
+    '''
     def Train(self,X,Y,image_shape,batch_size=1,epochs=10,num_classes=3):
         
 
         data=OrganDataset2(X,Y,image_shape,batch_size,num_classes=num_classes)
 
-        history=self.model.fit(data,epochs=epochs 
-                    #,validation_data=(test_images, test_labels)
+        history=self.model.fit(data,epochs=epochs,callbacks=self.PrepareCallbacks()
                      )
         return history
+    '''        
 
     def Predict(self,testImages,image_shape):
                

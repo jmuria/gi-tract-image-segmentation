@@ -117,23 +117,42 @@ class TestConvolutionalNetwork(unittest.TestCase):
         history=convNetwork.Train(images,maskOrgansImages,(368,368),batch_size=2,epochs=50)
        
         ConvolutionalNetwork.PlotHistory(history)
-        
-     '''
-     def test_TheLossFunctionShouldBePerfectForTheSameImage(self):
-         maskOrgansImages=[]
-         maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
-         maskImage1=OrgansInSlicesMasks.CreateCombinedMask(maskData,101,20,1,368,368)
-         y1 = np.zeros( (368,368) + (1,), dtype="uint8")
-         y1 = maskImage1
 
-         maskImage2=OrgansInSlicesMasks.CreateCombinedMask(maskData,43,22,82,368,368)
-         y2 = np.zeros( (368,368) + (1,), dtype="uint8")
-         y2 = maskImage2
-         loss= DiceLoss()
+
+     def test_ICanSetAnEarlyStop(self):
+        convNetwork=ConvolutionalNetwork()
+        model=convNetwork.CreateModel()
+        self.assertIsNotNone(model)
+        convNetwork.PrepareInput(368,368,1)
+        convNetwork.PrepareIntermediateFilters()
+        convNetwork.PrepareOutput(368,368,3)
+        convNetwork.CompileModel()
+        convNetwork.PlotModel()
+
+        images=[]
+        filePath='..\\input\\uw-madison-gi-tract-image-segmentation\\train\\case101\\case101_day20\\scans\\slice_0001_266_266_1.50_1.50.png'
+        image=ScanImage.Create(filePath) 
+        image=ScanImage.ResizeWithoutScaling(image,368,368)
+        images.append(image)
+
+        filePath='..\\input\\uw-madison-gi-tract-image-segmentation\\train\\case43\\case43_day22\\scans\\slice_0082_266_266_1.50_1.50.png'
+        image=ScanImage.Create(filePath) 
+        image=ScanImage.ResizeWithoutScaling(image,368,368)
+        images.append(image)
+    
+        maskOrgansImages=[]
+        maskData=OrgansInSlicesData.PrepareImageDataFromDatabase(self.databasePath)
+        maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,101,20,1,368,368)
+        maskOrgansImages.append(maskImage)
+        maskImage=OrgansInSlicesMasks.CreateCombinedMask(maskData,43,22,82,368,368)
+        maskOrgansImages.append(maskImage)
+       
+        patiente=4
+        convNetwork.SetEarlyStop(patiente)
+        history=convNetwork.Train(images,maskOrgansImages,(368,368),batch_size=2,epochs=50)
+       
+        ConvolutionalNetwork.PlotHistory(history)
         
-         self.assertEqual(loss.call(y_true=y1,y_pred=y1), 0)
-         self.assertNotEqual(loss.call(y_true=y1,y_pred=y2), 0)
-     '''
 
      def test_ICanPredictWithATrainedModel(self):
         convNetwork=ConvolutionalNetwork()

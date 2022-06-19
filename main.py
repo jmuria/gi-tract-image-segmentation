@@ -11,10 +11,10 @@ testBasePath='../test/'
 resultDatabasePath='../input/uw-madison-gi-tract-image-segmentation/sample_submission.csv'
 modelPath='../output/mymodel.h5'
 submissionDatabasePath='../output/submission.csv'
-trainModel=False
+trainModel=True
 numClasses=3
-numSamplesToTrain=10
-numEpocs=10
+numSamplesToTrain=30
+numEpocs=1
 
 
 def ShowIoU(numClasses,X_test,Predictions,y_test=None):
@@ -70,7 +70,7 @@ if(trainModel):
     convNetwork.PlotModel()
 
 
-
+    convNetwork.SetEarlyStop(4)
     history=convNetwork.Train(x,y_train_cat,(368,368),batch_size=2,epochs=numEpocs,num_classes=numClasses)
         
     ConvNetwork2.PlotHistory(history)
@@ -87,24 +87,27 @@ testImages=OrgansInSlicesTestData.PrepareImages(convertedPaths,368,368,1.50)
 
 
 
+resultDatabase=OrgansInSlicesTestData.CreateEmptyDatabase(resultDatabasePath,convertedPaths)
 
 Predictions=None
+numPrediction=0
 for testImage in testImages:
     arrayofTestImages=[]
     arrayofTestImages.append(testImage)
     arrayofTestImages=np.array(arrayofTestImages)
-    Prediction=convNetwork.Predict(arrayofTestImages,(368,368))   
-    if Predictions is None:
+    Prediction=convNetwork.Predict(arrayofTestImages,(368,368))  
+    Prediction=np.argmax(Prediction, axis=3)
+    resultDatabase=OrgansInSlicesTestData.UpdateResultDatabase(resultDatabase,convertedPaths[numPrediction],Prediction[0],368,368,1.50) 
+    if(Predictions is None):
         Predictions=Prediction
     else:
-        Predictions=np.concatenate((Predictions, Prediction), axis=0)        
+        Predictions=np.concatenate((Predictions,Prediction),axis=0)
   
 
-Predictions=np.argmax(Predictions, axis=3)
+
 ShowIoU(numClasses,testImages,Predictions)
 
 
-resultDatabase=OrgansInSlicesTestData.CreateResultDatabase(resultDatabasePath,convertedPaths,Predictions,368,368,1.50)
 
 print("Saving database",submissionDatabasePath)
-resultDatabase.to_csv(submissionDatabasePath,index=False )
+OrgansInSlicesTestData.SaveDatabase(resultDatabase,submissionDatabasePath)
